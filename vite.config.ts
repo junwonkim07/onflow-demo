@@ -5,8 +5,9 @@ import tailwindcss from '@tailwindcss/vite'
 import { seedDesignPlugin } from '@seed-design/vite-plugin'
 
 export default defineConfig({
-  // GitHub Pages 배포 시 DEPLOY_BASE=/onflow-demo/ (셸 경로 변환 이슈를 피하려고 env로 받는다)
-  base: process.env.DEPLOY_BASE || '/',
+  // GitHub Pages 배포: GHPAGES=1 npm run build
+  // (경로를 셸로 넘기면 Git Bash MSYS가 /onflow-demo/를 C:/Program Files/...로 변환하므로, 값 없는 플래그만 받는다)
+  base: process.env.GHPAGES ? '/onflow-demo/' : '/',
   plugins: [react(), tailwindcss(), seedDesignPlugin()],
   resolve: {
     alias: {
