@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { IconArrowRegular, IconChattingSendRegular } from '@seed-design/icon'
+import { IconArrowRegular, IconChattingSendRegular, IconAddRegular } from '@seed-design/icon'
 import { briefing, homeStats, asset, type RecentTask } from '../data'
 import { Card, SourceBadge, sourceName } from '../components/ui'
 import { spatialExpressive } from '../motion'
 
-/** 홈 채팅바 — 입력하면 워크스페이스로 넘어가 자동 타이핑된다 */
+/** 홈 채팅바 — Gemini 스타일 필 인풋. 입력하면 워크스페이스로 넘어가 자동 타이핑된다 */
 function HomeChatBar({ onSubmit }: { onSubmit: (text: string) => void }) {
   const [v, setV] = useState('')
   const go = () => {
@@ -14,20 +14,31 @@ function HomeChatBar({ onSubmit }: { onSubmit: (text: string) => void }) {
     setV('')
   }
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] pl-4 pr-1.5 py-1.5 focus-within:border-[var(--m3-outline)] transition-colors">
+    <div className="flex items-center gap-1.5 rounded-full bg-[var(--m3-surface-container)] pl-2 pr-2 h-14 focus-within:bg-[var(--m3-surface-container-high)] transition-colors">
+      <button
+        aria-label="Attach"
+        className="w-10 h-10 rounded-full grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container-high)] shrink-0"
+      >
+        <IconAddRegular width={20} height={20} />
+      </button>
       <input
         value={v}
         onChange={e => setV(e.target.value)}
         onKeyDown={e => e.key === 'Enter' && go()}
-        placeholder="Ask Onflow anything — it previews before it runs"
-        className="flex-1 bg-transparent outline-none text-[15px] min-w-0 h-9"
+        placeholder="Ask Onflow"
+        className="flex-1 bg-transparent outline-none text-[16px] min-w-0"
       />
       <button
         onClick={go}
         aria-label="Ask"
-        className="w-9 h-9 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-white grid place-items-center shrink-0"
+        disabled={!v.trim()}
+        className={`w-10 h-10 rounded-full grid place-items-center shrink-0 transition-colors ${
+          v.trim()
+            ? 'bg-[var(--seed-color-bg-brand-solid)] text-white'
+            : 'text-[var(--m3-on-surface-variant)]'
+        }`}
       >
-        <IconChattingSendRegular width={16} height={16} />
+        <IconChattingSendRegular width={17} height={17} />
       </button>
     </div>
   )

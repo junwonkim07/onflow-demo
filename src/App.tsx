@@ -99,7 +99,7 @@ export default function App() {
     <MotionConfig reducedMotion="user">
     <div className="h-screen flex bg-[var(--m3-surface)] text-[var(--m3-on-surface)]">
       {/* M3 Navigation Rail */}
-      <nav className="relative w-16 shrink-0 flex flex-col items-center py-4 gap-2 bg-[var(--m3-surface-container-lowest)] border-r border-[var(--m3-outline-variant)]">
+      <nav className="relative w-16 shrink-0 flex flex-col items-center py-4 gap-3 bg-[var(--m3-surface-container-lowest)] border-r border-[var(--m3-outline-variant)]">
         {NAV.map(({ key, label, Icon }) => {
           const active = page === key
           return (
@@ -117,7 +117,7 @@ export default function App() {
             >
               <Icon width={23} height={23} />
               {key === 'approvals' && pendingCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[var(--m3-error)] text-white text-[10px] grid place-items-center">
+                <span className="absolute top-0 right-0 min-w-4 h-4 px-1 rounded-full bg-[var(--m3-error)] text-white text-[10px] grid place-items-center ring-2 ring-[var(--m3-surface-container-lowest)]">
                   {pendingCount}
                 </span>
               )}

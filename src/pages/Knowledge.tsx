@@ -14,7 +14,15 @@ import {
   type SimulationLinkDatum,
 } from 'd3-force'
 import { ActionButton } from 'seed-design/ui/action-button'
-import { IconSearchRegular, IconArrowRegular } from '@seed-design/icon'
+import {
+  IconSearchRegular,
+  IconArrowRegular,
+  IconFileRegular,
+  IconUserGroupRegular,
+  IconListRegular,
+  IconClockRegular,
+  IconExpandRegular,
+} from '@seed-design/icon'
 import { docs, type Doc } from '../data'
 import { Card, PageHeader, SourceBadge, sourceName } from '../components/ui'
 import { spatialExpressive } from '../motion'
@@ -246,8 +254,19 @@ export default function Knowledge({ onAsk }: { onAsk: (prompt: string) => void }
       <PageHeader
         title="Company Memory"
         right={
-          <span className="text-xs text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-lg px-3 py-1.5">
-            204 docs · 38 entities · 122 links · compiled 5 min ago
+          <span className="flex items-center gap-3 text-xs text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-lg px-3 py-1.5 tabular-nums">
+            <span className="flex items-center gap-1" title="Documents">
+              <IconFileRegular width={13} height={13} /> 204
+            </span>
+            <span className="flex items-center gap-1" title="Entities">
+              <IconUserGroupRegular width={13} height={13} /> 38
+            </span>
+            <span className="flex items-center gap-1" title="Links">
+              <IconListRegular width={13} height={13} /> 122
+            </span>
+            <span className="flex items-center gap-1" title="Compiled 5 min ago">
+              <IconClockRegular width={13} height={13} /> 5m
+            </span>
           </span>
         }
       />
@@ -258,19 +277,23 @@ export default function Knowledge({ onAsk }: { onAsk: (prompt: string) => void }
           <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
             <button
               onClick={resetZoom}
-              className="text-[11px] px-2.5 py-1 rounded-lg bg-[var(--m3-surface-container)] text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container-high)] transition-colors"
+              title="Reset view"
+              aria-label="Reset view"
+              className="w-8 h-8 rounded-lg grid place-items-center bg-[var(--m3-surface-container)] text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container-high)] transition-colors"
             >
-              Reset view
+              <IconExpandRegular width={16} height={16} />
             </button>
             <button
               onClick={() => setShowEntities(v => !v)}
-              className={`text-[11px] px-2.5 py-1 rounded-lg transition-colors ${
+              title={showEntities ? 'Hide entities' : 'Show entities'}
+              aria-label="Toggle entities"
+              className={`w-8 h-8 rounded-lg grid place-items-center transition-colors ${
                 showEntities
                   ? 'bg-[var(--m3-secondary-container)] text-[var(--m3-on-secondary-container)]'
                   : 'bg-[var(--m3-surface-container)] text-[var(--m3-on-surface-variant)]'
               }`}
             >
-              Entities
+              <IconUserGroupRegular width={16} height={16} />
             </button>
           </div>
           <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full select-none touch-none" />
