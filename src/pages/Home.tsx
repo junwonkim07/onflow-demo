@@ -111,7 +111,7 @@ export default function Home({
             >
               <button
                 onClick={() => onOpenBrief(b.prompt)}
-                className="w-full text-left bg-[var(--m3-surface-container-lowest)] rounded-2xl px-5 py-4 flex items-center gap-4 shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_28px_-14px_rgba(0,0,0,.12)] hover:bg-[var(--m3-surface-container-low)] hover:shadow-[0_10px_30px_rgba(0,0,0,.12)] transition-[background-color,box-shadow] group"
+                className="w-full text-left bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] px-5 py-4 flex items-center gap-4 shadow-[0_1px_2px_rgba(0,0,0,.03)] hover:bg-[var(--m3-surface-container-low)] hover:border-[var(--m3-outline)] transition-colors group"
               >
                 <SourceBadge source={b.tool} size={38} />
                 <span className="min-w-0 flex-1">

@@ -100,37 +100,38 @@ export default function App() {
     <MotionConfig reducedMotion="user">
     <div className="h-screen flex bg-[var(--m3-surface)] text-[var(--m3-on-surface)]">
       {/* M3 Navigation Rail */}
-      <nav className="relative w-20 shrink-0 flex flex-col items-center py-5 gap-1 bg-[var(--m3-surface-container-low)]">
+      <nav className="relative w-14 shrink-0 flex flex-col items-center py-4 gap-1.5 bg-[var(--m3-surface-container-lowest)] border-r border-[var(--m3-outline-variant)]">
         {NAV.map(({ key, label, Icon }) => {
           const active = page === key
           return (
             <button
               key={key}
               onClick={() => setPage(key)}
-              className="w-full flex flex-col items-center gap-1.5 py-2 group"
+              title={label}
+              aria-label={label}
               aria-current={active ? 'page' : undefined}
+              className={`relative w-9 h-9 rounded-lg grid place-items-center transition-colors ${
+                active
+                  ? 'bg-[var(--m3-surface-container-high)] text-[var(--m3-on-surface)]'
+                  : 'text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]'
+              }`}
             >
-              <span
-                className={`relative w-14 h-8 rounded-full grid place-items-center transition-colors ${
-                  active
-                    ? 'bg-[var(--m3-secondary-container)] text-[var(--m3-on-secondary-container)]'
-                    : 'text-[var(--m3-on-surface-variant)] group-hover:bg-[var(--m3-surface-container-high)]'
-                }`}
-              >
-                <Icon width={20} height={20} />
-                {key === 'approvals' && pendingCount > 0 && (
-                  <span className="absolute -top-1 right-2 min-w-4 h-4 px-1 rounded-full bg-[var(--m3-error)] text-white text-[10px] grid place-items-center">
-                    {pendingCount}
-                  </span>
-                )}
-              </span>
-              <span className={`text-[11px] ${active ? 'font-bold' : 'text-[var(--m3-on-surface-variant)]'}`}>{label}</span>
+              <Icon width={19} height={19} />
+              {key === 'approvals' && pendingCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[var(--m3-error)] text-white text-[10px] grid place-items-center">
+                  {pendingCount}
+                </span>
+              )}
             </button>
           )
         })}
         <div className="flex-1" />
-        <button className="w-14 h-8 rounded-full grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container-high)]">
-          <IconSettingRegular width={20} height={20} />
+        <button
+          title="Settings"
+          aria-label="Settings"
+          className="w-9 h-9 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]"
+        >
+          <IconSettingRegular width={19} height={19} />
         </button>
       </nav>
 

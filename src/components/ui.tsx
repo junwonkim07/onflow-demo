@@ -38,11 +38,11 @@ export function sourceName(source: ToolKey | 'erp' | 'drive'): string {
   return TOOLS[source].name
 }
 
-/** 보더 없는 표면 — 톤 차이와 은은한 그림자로만 구분 */
+/** 인터콤풍 표면 — 화이트 + 헤어라인 보더 + 아주 옅은 그림자 */
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[var(--m3-surface-container-lowest)] rounded-2xl shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_28px_-14px_rgba(0,0,0,.12)] ${className}`}
+      className={`bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] shadow-[0_1px_2px_rgba(0,0,0,.03)] ${className}`}
     >
       {children}
     </div>
@@ -51,10 +51,10 @@ export function Card({ children, className = '' }: { children: ReactNode; classN
 
 export function PageHeader({ title, desc, right }: { title: string; desc?: string; right?: ReactNode }) {
   return (
-    <div className="flex items-end justify-between mb-7">
+    <div className="flex items-end justify-between mb-6">
       <div>
-        <h1 className="text-[26px] font-bold tracking-tight">{title}</h1>
-        {desc && <p className="text-[15px] text-[var(--m3-on-surface-variant)] mt-1.5">{desc}</p>}
+        <h1 className="text-[21px] font-bold tracking-tight">{title}</h1>
+        {desc && <p className="text-sm text-[var(--m3-on-surface-variant)] mt-1">{desc}</p>}
       </div>
       {right}
     </div>

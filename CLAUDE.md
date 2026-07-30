@@ -39,11 +39,11 @@
 - 쓸 수 있는 변수: `--m3-primary`, `--m3-on-primary`, `--m3-primary-container`, `--m3-on-primary-container`, `--m3-secondary(-container)`, `--m3-tertiary(-container)`, `--m3-error(-container)`, `--m3-surface`, `--m3-surface-container-{lowest,low,'',high,highest}`, `--m3-on-surface(-variant)`, `--m3-outline(-variant)`, `--m3-inverse-*`
 - 용법: 강조=primary, 선택 상태 배경=secondary-container, 엔티티/특수=tertiary, 파괴적=error. Tailwind에선 `bg-[var(--m3-primary)]` 식 arbitrary value로 쓴다.
 - 예외적으로 허용된 고정색: 도구 로고·카드 헤더의 브랜드색 (Slack `#4A154B`, Gmail `#C5221F`, Notion `#191919`, Calendar `#1A73E8`), 그래프 소스색(`SOURCE_COLOR`), 팀원 아바타색.
-- **라이트 모드 서피스는 하늘빛 에어리 커스텀**(#eef4fa 계열, Aside 브라우저 레퍼런스)이다 — theme.ts에 의도적으로 하드코딩되어 있으니 "M3 뉴트럴로 정정"하지 말 것. 다크는 M3 뉴트럴 유지.
+- **라이트 모드는 인터콤풍 뉴트럴**(화이트 서피스 + gray-200 헤어라인 + 니어블랙 프라이머리 버튼)로 theme.ts에 의도적으로 하드코딩되어 있다 — "M3 뉴트럴로 정정"하지 말 것. 다크는 M3 뉴트럴 유지. (이전의 하늘빛 에어리 톤은 이 결정으로 대체됨)
 
 ### 형태
-- 카드: **보더 없음**. `Card` 컴포넌트(`src/components/ui.tsx`) = surface + 은은한 그림자. 새 카드도 반드시 이걸 쓰거나 같은 패턴을 따른다. `border border-...` 클래스로 외곽선 치지 말 것 (입력창 컴포저만 예외).
-- 라운딩: 카드 `rounded-2xl`, 칩/작은 버튼 `rounded-lg`, 내비 레일 활성 인디케이터는 M3 정석 **알약형**(`rounded-full` stadium), 검색바 `rounded-full`.
+- 카드: `Card` 컴포넌트(`src/components/ui.tsx`) = 화이트 + **헤어라인 보더**(outline-variant) + 아주 옅은 그림자 (인터콤 레퍼런스). 새 카드도 반드시 이 패턴. 두꺼운 보더·진한 그림자 금지.
+- 라운딩: 카드 `rounded-xl`, 칩/작은 버튼 `rounded-lg`, 내비 레일은 **아이콘 온리**(w-9 h-9 rounded-lg, 활성=surface-container-high) — 툴팁(title)으로 라벨 제공.
 - 아이콘: `@seed-design/icon`의 `Icon*Regular`만. 새 아이콘이 필요하면 그 패키지에서 찾는다 (인라인 SVG는 도구 로고 등 기존 것만).
 
 ### 모션 (M3 Expressive)

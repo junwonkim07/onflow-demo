@@ -652,7 +652,7 @@ export default function Workspace({
               {ghost && (
                 <div className="absolute inset-0 pointer-events-none text-[15px] leading-6 whitespace-pre-wrap break-words" aria-hidden>
                   <span className="invisible">{input}</span>
-                  <span className="text-[var(--m3-on-surface-variant)] opacity-60">{ghost}</span>
+                  <span className="text-[var(--m3-on-surface-variant)] opacity-35">{ghost}</span>
                 </div>
               )}
               {!input && (
