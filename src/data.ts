@@ -99,12 +99,29 @@ export const homeStats = [
 
 /* ---------- Recent tasks (Aside-style activity cards) ---------- */
 
-export type RecentTask = { title: string; tool: ToolKey; when: string; img?: string }
+export type RecentTask = { title: string; tool: ToolKey; when: string; img?: string; steps?: string[] }
 
 export const seedRecent: RecentTask[] = [
-  { title: 'Sent Aqara Life quote', tool: 'gmail', when: 'yesterday', img: 'img/smarthome.jpg' },
-  { title: 'Filed weekly minutes to Notion', tool: 'notion', when: 'yesterday' },
-  { title: 'Order-deadline reminder', tool: 'slack', when: 'Monday', img: 'img/warehouse.jpg' },
+  {
+    title: 'Sent Aqara Life quote',
+    tool: 'gmail',
+    when: 'yesterday',
+    img: 'img/smarthome.jpg',
+    steps: ['Pulled pricing from memory', 'Drafted the email', 'Approved · sent'],
+  },
+  {
+    title: 'Filed weekly minutes to Notion',
+    tool: 'notion',
+    when: 'yesterday',
+    steps: ['Collected 4 meeting threads', 'Structured the minutes', 'Created the page'],
+  },
+  {
+    title: 'Order-deadline reminder',
+    tool: 'slack',
+    when: 'Monday',
+    img: 'img/warehouse.jpg',
+    steps: ['Checked ERP order status', 'Drafted the notice', 'Approved · posted'],
+  },
 ]
 
 /* ---------- Approval queue ---------- */

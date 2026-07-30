@@ -38,6 +38,20 @@ export function sourceName(source: ToolKey | 'erp' | 'drive'): string {
   return TOOLS[source].name
 }
 
+/** 미니멀 4-포인트 스파크 — 꽃모양 대체 (ChatGPT풍 스트로크) */
+export function SparkIcon({ width = 16, height, className }: { width?: number; height?: number; className?: string }) {
+  return (
+    <svg width={width} height={height ?? width} viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <path
+        d="M12 3.5c.9 4.4 3.1 6.6 7.5 7.5-4.4.9-6.6 3.1-7.5 7.5-.9-4.4-3.1-6.6-7.5-7.5 4.4-.9 6.6-3.1 7.5-7.5Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 /** 인터콤풍 표면 — 화이트 + 헤어라인 보더 + 아주 옅은 그림자 */
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (

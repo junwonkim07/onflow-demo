@@ -43,13 +43,15 @@ function buildVars(mode: Mode): Record<string, string> {
     '--m3-inverse-surface': hex(s.inverseSurface),
     '--m3-inverse-on-surface': hex(s.inverseOnSurface),
 
-    // SEED 브랜드 토큰 오버라이드 — 라이트는 인터콤풍 니어블랙 버튼, 다크는 M3 primary
-    '--seed-color-bg-brand-solid': light ? '#1f2937' : hex(s.primary),
-    '--seed-color-bg-brand-solid-pressed': light ? '#111827' : hexFromArgb(theme.palettes.primary.tone(85)),
+    // SEED 브랜드 토큰 오버라이드 — 라이트=니어블랙, 다크=화이트 버튼 (ChatGPT식 반전, 가독성)
+    '--seed-color-bg-brand-solid': light ? '#1f2937' : '#e5e7eb',
+    '--seed-color-bg-brand-solid-pressed': light ? '#111827' : '#f3f4f6',
     '--seed-color-bg-brand-weak': hex(s.primaryContainer),
     '--seed-color-bg-brand-weak-pressed': hexFromArgb(theme.palettes.primary.tone(light ? 85 : 25)),
     '--seed-color-fg-brand': light ? hex(s.primary) : hexFromArgb(theme.palettes.primary.tone(80)),
-    '--seed-color-fg-brand-contrast': hex(s.onPrimary),
+    '--seed-color-fg-brand-contrast': light ? '#ffffff' : '#111827',
+    // brandSolid 레시피가 쓰는 텍스트/아이콘 색 — 다크에선 화이트 버튼 위 다크 텍스트
+    '--seed-color-palette-static-white': light ? '#ffffff' : '#111827',
   }
 }
 

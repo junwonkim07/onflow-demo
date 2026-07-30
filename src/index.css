@@ -2,9 +2,59 @@
 
 body {
   @apply antialiased;
-  font-family: "Noto Serif", "Noto Serif KR", Georgia, serif;
-  background: var(--m3-surface);
+  font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Inter", system-ui, sans-serif;
+  /* 무채색 깊이감 — 색 없이 명암만 은은하게 */
+  background:
+    radial-gradient(1100px 520px at 50% -8%, color-mix(in srgb, var(--m3-surface-container-lowest) 85%, transparent), transparent 70%),
+    var(--m3-surface);
   color: var(--m3-on-surface);
+}
+
+/* 유리 효과 — 반투명 + 블러, 색 그라데이션 없음 */
+.glass {
+  background: color-mix(in srgb, var(--m3-surface-container-lowest) 62%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* 우아한 스크롤바 — 얇고 트랙 없는 라운드 썸, 호버 시 진해짐 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--m3-outline) 55%, transparent) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--m3-outline) 55%, transparent);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--m3-outline);
+}
+*::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 스크롤 가능하되 스크롤바는 숨김 */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* 더 불투명한 유리 — 컴포넌트용 (은은하게) */
+.glass-strong {
+  background: color-mix(in srgb, var(--m3-surface-container-lowest) 86%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 :root {

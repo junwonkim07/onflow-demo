@@ -10,7 +10,6 @@ import {
   IconCalendarRegular,
   IconWarningRegular,
   IconAddRegular,
-  IconCheckFlowerRegular,
   IconSearchRegular,
   IconExpandMoreRegular,
   IconReviewStarRegular,
@@ -37,7 +36,7 @@ import {
   type ToolKey,
 } from '../intent'
 import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, asset, type ThreadMessage, type SourceKey } from '../data'
-import { SourceBadge } from '../components/ui'
+import { SourceBadge, SparkIcon } from '../components/ui'
 import { spatialExpressive, effect } from '../motion'
 
 const PLACEHOLDERS = [
@@ -568,7 +567,7 @@ export default function Workspace({
       onKeyDown={e => e.key === 'Escape' && setDismissed(true)}
     >
       {/* ── Col 1: Inbox nav ─────────────────────── */}
-      <aside className="w-52 shrink-0 hidden lg:flex flex-col border-r border-[var(--m3-outline-variant)]">
+      <aside className="w-52 shrink-0 hidden md:flex flex-col border-r border-[var(--m3-outline-variant)]">
         <div className="h-12 shrink-0 flex items-center justify-between px-3.5">
           <span className="text-[15px] font-bold">Inbox</span>
           <span className="flex items-center gap-0.5 text-[var(--m3-on-surface-variant)]">
@@ -613,7 +612,7 @@ export default function Workspace({
             ))}
           </div>
           <div className="pt-2">
-            <NavRow Icon={IconCheckFlowerRegular} label="Onflow AI Agent" chevron active={view === 'agent'} onClick={() => openView('agent')} />
+            <NavRow Icon={SparkIcon} label="Onflow AI Agent" chevron active={view === 'agent'} onClick={() => openView('agent')} />
           </div>
         </div>
         <div className="flex-1" />
@@ -694,7 +693,7 @@ export default function Workspace({
                   active ? 'bg-[var(--m3-surface-container)]' : 'hover:bg-[var(--m3-surface-container-low)]'
                 }`}
               >
-                <span className="w-7 h-7 rounded-lg shrink-0 grid place-items-center text-[11px] font-bold bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)]">
+                <span className="w-7 h-7 rounded-full shrink-0 grid place-items-center text-[11px] font-bold bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)]">
                   {s.title[0]}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -754,7 +753,7 @@ export default function Workspace({
               <I width={16} height={16} />
             </button>
           ))}
-          <button className="ml-1 h-7 px-3 rounded-full bg-[var(--seed-color-bg-brand-solid)] text-white text-[12px] font-bold flex items-center gap-1">
+          <button className="ml-1 h-7 px-3 rounded-full bg-[var(--seed-color-bg-brand-solid)] text-[var(--seed-color-fg-brand-contrast)] text-[12px] font-bold flex items-center gap-1">
             <IconCheckRegular width={13} height={13} /> Close
           </button>
         </header>
@@ -1005,7 +1004,7 @@ export default function Workspace({
               )}
             </div>
             <div className="flex items-center gap-0.5 px-2.5 pb-2.5">
-              {[IconAddCircleRegular, IconBookmarkRegular, IconWriteRegular, IconCheckFlowerRegular].map((I, i) => (
+              {[IconAddCircleRegular, IconBookmarkRegular, IconWriteRegular, SparkIcon].map((I, i) => (
                 <button key={i} className="w-7 h-7 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]">
                   <I width={15} height={15} />
                 </button>
@@ -1015,10 +1014,10 @@ export default function Workspace({
               </span>
               <button
                 onClick={showActionCard ? execute : sendPlain}
-                className="h-8 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-white text-[12px] font-bold flex items-center overflow-hidden"
+                className="h-8 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-[var(--seed-color-fg-brand-contrast)] text-[12px] font-bold flex items-center overflow-hidden"
               >
                 <span className="px-3.5">{showActionCard ? 'Run' : 'Send'}</span>
-                <span className="w-px self-stretch bg-white/25" />
+                <span className="w-px self-stretch bg-[var(--seed-color-fg-brand-contrast)] opacity-25" />
                 <span className="px-1.5 grid place-items-center">
                   <IconExpandMoreRegular width={13} height={13} />
                 </span>
@@ -1031,7 +1030,7 @@ export default function Workspace({
 
       {/* ── Col 4: Details / Copilot ─────────────── */}
       {sessionsMode && (
-      <aside className="w-72 shrink-0 hidden xl:flex flex-col border-l border-[var(--m3-outline-variant)]">
+      <aside className="w-72 shrink-0 hidden lg:flex flex-col border-l border-[var(--m3-outline-variant)]">
         <div className="h-12 shrink-0 flex items-center gap-4 px-4 border-b border-[var(--m3-outline-variant)]">
           {(['details', 'copilot'] as const).map(t => (
             <button
@@ -1063,7 +1062,7 @@ export default function Workspace({
                           cancelDemo()
                           setInput(lastAgent.text)
                         }}
-                        className="h-8 px-3 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-white text-[12px] font-bold flex items-center gap-1.5"
+                        className="h-8 px-3 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-[var(--seed-color-fg-brand-contrast)] text-[12px] font-bold flex items-center gap-1.5"
                       >
                         <IconWriteRegular width={13} height={13} /> Add to composer
                       </button>
@@ -1123,7 +1122,7 @@ export default function Workspace({
                   setCopilotQ('')
                 }}
                 aria-label="Ask"
-                className="w-7 h-7 rounded-md bg-[var(--seed-color-bg-brand-solid)] text-white grid place-items-center shrink-0"
+                className="w-7 h-7 rounded-md bg-[var(--seed-color-bg-brand-solid)] text-[var(--seed-color-fg-brand-contrast)] grid place-items-center shrink-0"
               >
                 <IconChattingSendRegular width={13} height={13} />
               </button>
@@ -1218,7 +1217,7 @@ function ItemDetail({ item, onReply }: { item: InboxItem; onReply: () => void })
           <div className="flex items-center gap-2 mt-4">
             <button
               onClick={onReply}
-              className="h-9 px-4 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-white text-[12px] font-bold flex items-center gap-1.5"
+              className="h-9 px-4 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-[var(--seed-color-fg-brand-contrast)] text-[12px] font-bold flex items-center gap-1.5"
             >
               <IconWriteRegular width={14} height={14} /> Draft reply in a session
             </button>
@@ -1282,7 +1281,7 @@ function AgentPanel() {
       <div className="max-w-xl mx-auto">
         <div className="flex items-center gap-3 mb-5">
           <span className="w-11 h-11 rounded-full bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)] grid place-items-center">
-            <IconCheckFlowerRegular width={22} height={22} />
+            <SparkIcon width={22} />
           </span>
           <div>
             <h2 className="font-bold text-[17px]">Onflow AI Agent</h2>
@@ -1343,7 +1342,7 @@ function NavRow({
   chevron,
   onClick,
 }: {
-  Icon: typeof IconHomeRegular
+  Icon: React.ComponentType<{ width?: number; height?: number; className?: string }>
   label: string
   count?: number
   active?: boolean
@@ -1376,7 +1375,7 @@ function EmptyState({ onPick }: { onPick: (text: string) => void }) {
         className="w-12 h-12 rounded-full bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)] grid place-items-center"
         aria-hidden
       >
-        <IconCheckFlowerRegular width={22} height={22} />
+        <SparkIcon width={22} />
       </motion.span>
       <div className="text-center">
         <motion.h2
@@ -1498,7 +1497,7 @@ function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
     >
       {!mine && (
         <span className="w-6 h-6 rounded-full bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)] grid place-items-center shrink-0 mb-4">
-          <IconCheckFlowerRegular width={13} height={13} />
+          <SparkIcon width={13} />
         </span>
       )}
       <div className="max-w-[75%]">
@@ -1525,7 +1524,7 @@ function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
         <div
           className={`rounded-xl px-3.5 py-2 leading-relaxed whitespace-pre-line ${
             mine
-              ? 'bg-[var(--seed-color-bg-brand-solid)] text-white rounded-br-md'
+              ? 'bg-[var(--seed-color-bg-brand-solid)] text-[var(--seed-color-fg-brand-contrast)] rounded-br-md'
               : tool
                 ? 'bg-[var(--m3-surface-container-lowest)] border rounded-bl-md'
                 : 'bg-[var(--m3-surface-container)] rounded-bl-md'
