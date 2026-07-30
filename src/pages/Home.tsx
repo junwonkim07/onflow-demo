@@ -90,7 +90,7 @@ export default function Home({
   return (
     <div className="max-w-5xl w-full mx-auto relative">
       {/* 히어로 — 인사말 + 커맨드 바 (이전 버전) */}
-      <div className="relative min-h-[34vh] flex flex-col justify-end pb-14">
+      <div className="relative min-h-[42vh] flex flex-col justify-end pb-24">
         <motion.h1
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -111,7 +111,7 @@ export default function Home({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spatialExpressive, delay: 0.14 }}
-          className="mt-9 w-full max-w-2xl mx-auto"
+          className="mt-14 w-full max-w-2xl mx-auto"
         >
           <HomeChatBar onSubmit={onOpenBrief} />
         </motion.div>
