@@ -19,7 +19,28 @@ export type ThreadMessage = {
   sources?: { key: SourceKey; label: string }[]
   /** Attached photo (public/img) */
   image?: string
+  /** 산문 대신 렌더되는 구조화 카드 */
+  card?: MessageCard
 }
+
+/** 에이전트 답변의 비주얼 카드 — 글로 풀 내용을 컴포넌트로 보여준다 */
+export type MessageCard =
+  | {
+      type: 'event'
+      title: string
+      day: string
+      from: string
+      to: string
+      accepted: number
+      total: number
+    }
+  | {
+      type: 'meter'
+      label: string
+      value: number
+      threshold: number
+      caption: string
+    }
 
 export const initialThread: ThreadMessage[] = [
   {
@@ -32,8 +53,15 @@ export const initialThread: ThreadMessage[] = [
   {
     id: 2,
     from: 'agent',
-    text: 'Logged to the ops journal. ERP shows 92% rack utilization at the Icheon site — 3PL overflow kicks in at 95%, so I’d flag this in tomorrow’s logistics sync.',
+    text: 'Logged to the ops journal. Worth flagging in tomorrow’s logistics sync:',
     time: '11:03 AM',
+    card: {
+      type: 'meter',
+      label: 'Rack utilization · Icheon',
+      value: 92,
+      threshold: 95,
+      caption: '3PL overflow kicks in at 95%',
+    },
     sources: [
       { key: 'erp', label: 'Rack utilization' },
       { key: 'notion', label: 'Ops journal' },
@@ -43,8 +71,17 @@ export const initialThread: ThreadMessage[] = [
   {
     id: 4,
     from: 'agent',
-    text: 'Yes — per the calendar, tomorrow (Fri) design review moved from 2 PM → 3 PM. 2 of the 6 attendees haven’t accepted the updated invite yet.',
+    text: 'Yes — updated on the calendar:',
     time: '4:52 PM',
+    card: {
+      type: 'event',
+      title: 'Design review',
+      day: 'Tomorrow (Fri)',
+      from: '2:00 PM',
+      to: '3:00 PM',
+      accepted: 4,
+      total: 6,
+    },
   },
 ]
 

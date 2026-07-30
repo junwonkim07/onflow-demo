@@ -199,7 +199,7 @@ export default function Home({
             >
               <button
                 onClick={() => onOpenBrief(b.prompt)}
-                className="w-full text-left bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] px-5 py-4 flex items-center gap-4 hover:bg-[var(--m3-surface-container-low)] transition-colors group"
+                className="w-full text-left bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] card-shadow px-5 py-4 flex items-center gap-4 hover:bg-[var(--m3-surface-container-low)] transition-colors group"
               >
                 <SourceBadge source={b.tool} size={38} />
                 <span className="min-w-0 flex-1">

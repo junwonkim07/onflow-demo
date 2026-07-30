@@ -38,15 +38,22 @@ export function sourceName(source: ToolKey | 'erp' | 'drive'): string {
   return TOOLS[source].name
 }
 
-/** 미니멀 4-포인트 스파크 — 꽃모양 대체 (ChatGPT풍 스트로크) */
+/** Onflow 에이전트 글리프 — 흐름(flow)을 나타내는 이중 웨이브 (Gemini 별 아님) */
 export function SparkIcon({ width = 16, height, className }: { width?: number; height?: number; className?: string }) {
   return (
     <svg width={width} height={height ?? width} viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
       <path
-        d="M12 3.5c.9 4.4 3.1 6.6 7.5 7.5-4.4.9-6.6 3.1-7.5 7.5-.9-4.4-3.1-6.6-7.5-7.5 4.4-.9 6.6-3.1 7.5-7.5Z"
+        d="M4 9.2c2.6-2.9 5.4-2.9 8 0s5.4 2.9 8 0"
         stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M4 15c2.6-2.9 5.4-2.9 8 0s5.4 2.9 8 0"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        opacity="0.55"
       />
     </svg>
   )
@@ -56,7 +63,7 @@ export function SparkIcon({ width = 16, height, className }: { width?: number; h
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] ${className}`}
+      className={`bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] card-shadow ${className}`}
     >
       {children}
     </div>

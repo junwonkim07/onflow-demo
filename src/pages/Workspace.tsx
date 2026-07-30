@@ -8,6 +8,7 @@ import {
   IconUserGroupRegular,
   IconClockRegular,
   IconCalendarRegular,
+  IconArrowRegular,
   IconWarningRegular,
   IconAddRegular,
   IconSearchRegular,
@@ -35,7 +36,7 @@ import {
   type ConflictAnswer,
   type ToolKey,
 } from '../intent'
-import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, asset, type ThreadMessage, type SourceKey } from '../data'
+import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, asset, type ThreadMessage, type SourceKey, type MessageCard } from '../data'
 import { SourceBadge, SparkIcon } from '../components/ui'
 import { spatialExpressive, effect } from '../motion'
 
@@ -1463,6 +1464,67 @@ function Timeline({ answer }: { answer: AvailabilityAnswer }) {
   )
 }
 
+/** 산문 대신 렌더되는 답변 카드 — 일정 변경/수치는 눈으로 읽는다 */
+function MessageCardView({ card }: { card: MessageCard }) {
+  if (card.type === 'event') {
+    return (
+      <div className="mt-2 rounded-lg border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-3 min-w-[240px]">
+        <div className="flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-lg grid place-items-center shrink-0" style={{ backgroundColor: `${TOOLS.calendar.color}14`, color: TOOLS.calendar.color }}>
+            <IconCalendarRegular width={16} height={16} />
+          </span>
+          <div className="leading-tight min-w-0">
+            <div className="font-bold truncate">{card.title}</div>
+            <div className="text-[11px] text-[var(--m3-on-surface-variant)]">{card.day}</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 mt-2.5 tabular-nums">
+          <span className="text-[13px] text-[var(--m3-on-surface-variant)] line-through">{card.from}</span>
+          <IconArrowRegular width={13} height={13} className="text-[var(--m3-on-surface-variant)]" />
+          <span className="text-[14px] font-bold text-[var(--m3-primary)]">{card.to}</span>
+        </div>
+        <div className="flex items-center gap-2 mt-2.5">
+          <span className="flex gap-1">
+            {Array.from({ length: card.total }, (_, i) => (
+              <span
+                key={i}
+                className={`w-2 h-2 rounded-full ${i < card.accepted ? 'bg-[var(--m3-primary)]' : 'border border-[var(--m3-outline)]'}`}
+              />
+            ))}
+          </span>
+          <span className="text-[11px] text-[var(--m3-on-surface-variant)]">
+            {card.accepted}/{card.total} accepted
+          </span>
+        </div>
+      </div>
+    )
+  }
+  const pct = Math.min(100, card.value)
+  const near = card.value >= card.threshold - 5
+  return (
+    <div className="mt-2 rounded-lg border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-3 min-w-[240px]">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="font-bold truncate">{card.label}</span>
+        <span className={`text-[15px] font-bold tabular-nums ${near ? 'text-[var(--m3-error)]' : 'text-[var(--m3-primary)]'}`}>
+          {card.value}%
+        </span>
+      </div>
+      <div className="relative h-2 rounded-full bg-[var(--m3-surface-container-high)] mt-2 overflow-visible">
+        <div
+          className={`absolute inset-y-0 left-0 rounded-full ${near ? 'bg-[var(--m3-error)]' : 'bg-[var(--m3-primary)]'}`}
+          style={{ width: `${pct}%` }}
+        />
+        <span
+          className="absolute -top-1 bottom-[-4px] w-px bg-[var(--m3-on-surface-variant)]"
+          style={{ left: `${card.threshold}%` }}
+          title={`Threshold ${card.threshold}%`}
+        />
+      </div>
+      <div className="text-[11px] text-[var(--m3-on-surface-variant)] mt-2">{card.caption}</div>
+    </div>
+  )
+}
+
 function SourceChips({ sources }: { sources: { key: SourceKey; label: string }[] }) {
   return (
     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -1532,6 +1594,7 @@ function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
           style={tool ? { borderColor: tool.color } : undefined}
         >
           {m.text}
+          {m.card && <MessageCardView card={m.card} />}
           {!mine && m.sources && <SourceChips sources={m.sources} />}
         </div>
         <div className={`text-[10px] text-[var(--m3-on-surface-variant)] mt-1 ${mine ? 'text-right' : ''}`}>{m.time}</div>
