@@ -298,7 +298,7 @@ const initialSessions: Session[] = [
         from: 'peer',
         author: 'Jihoon',
         avatar: 'img/avatar-jihoon.jpg',
-        text: 'I only see the summary — can I get the full sheet for the meeting?',
+        text: '@Onflow I only see the summary — can I get the full sheet for the meeting?',
         time: '10:16 AM',
       },
       {
@@ -325,7 +325,7 @@ const initialSessions: Session[] = [
       {
         id: 1,
         from: 'me',
-        text: 'Site photo from yesterday’s pilot install — lock placement look right to you?',
+        text: '@Onflow site photo from yesterday’s pilot install — lock placement look right to you?',
         time: 'yesterday',
         image: 'img/smarthome.jpg',
       },
@@ -1128,7 +1128,7 @@ export default function Workspace({
               }`}
             >
               {t}
-              {rightTab === t && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-[#ea580c] rounded-full" />}
+              {rightTab === t && <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-[var(--m3-primary)] rounded-full" />}
             </button>
           ))}
         </div>
@@ -1696,6 +1696,21 @@ function SourceChips({ sources }: { sources: { key: SourceKey; label: string }[]
   )
 }
 
+/** "@Onflow" 멘션을 포인트 컬러로 하이라이트 — 내 버블(솔리드 배경)에서는 볼드만 */
+function withMentions(text: string, mine: boolean) {
+  const parts = text.split(/(@Onflow)/g)
+  if (parts.length === 1) return text
+  return parts.map((p, i) =>
+    p === '@Onflow' ? (
+      <span key={i} className={`font-semibold ${mine ? '' : 'text-[var(--m3-primary)]'}`}>
+        @Onflow
+      </span>
+    ) : (
+      p
+    ),
+  )
+}
+
 function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
   const mine = m.from === 'me'
   const tool = m.tool ? TOOLS[m.tool] : null
@@ -1755,7 +1770,7 @@ function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
           }`}
           style={tool ? { borderColor: tool.color } : undefined}
         >
-          {m.text}
+          {withMentions(m.text, mine)}
           {m.card && <MessageCardView card={m.card} />}
           {!mine && m.sources && <SourceChips sources={m.sources} />}
         </div>

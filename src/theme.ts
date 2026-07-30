@@ -1,7 +1,7 @@
 import { argbFromHex, hexFromArgb, themeFromSourceColor } from '@material/material-color-utilities'
 
-// Onflow 브랜드 시드 컬러 — M3 스킴 전체가 여기서 파생된다
-const SOURCE = '#4E5FD9'
+// Onflow 브랜드 시드 컬러 — M3 스킴 전체가 여기서 파생된다 (Cobalt Indigo)
+const SOURCE = '#4051CB'
 
 const theme = themeFromSourceColor(argbFromHex(SOURCE))
 
@@ -43,9 +43,9 @@ function buildVars(mode: Mode): Record<string, string> {
     '--m3-inverse-surface': hex(s.inverseSurface),
     '--m3-inverse-on-surface': hex(s.inverseOnSurface),
 
-    // SEED 브랜드 토큰 오버라이드 — 라이트=니어블랙, 다크=화이트 버튼 (ChatGPT식 반전, 가독성)
-    '--seed-color-bg-brand-solid': light ? '#1f2937' : '#e5e7eb',
-    '--seed-color-bg-brand-solid-pressed': light ? '#111827' : '#f3f4f6',
+    // SEED 브랜드 토큰 오버라이드 — 라이트=코발트 인디고 CTA(포인트 컬러 5–10% 원칙), 다크=화이트 버튼 (가독성)
+    '--seed-color-bg-brand-solid': light ? hex(s.primary) : '#e5e7eb',
+    '--seed-color-bg-brand-solid-pressed': light ? hexFromArgb(theme.palettes.primary.tone(35)) : '#f3f4f6',
     '--seed-color-bg-brand-weak': hex(s.primaryContainer),
     '--seed-color-bg-brand-weak-pressed': hexFromArgb(theme.palettes.primary.tone(light ? 85 : 25)),
     '--seed-color-fg-brand': light ? hex(s.primary) : hexFromArgb(theme.palettes.primary.tone(80)),

@@ -39,7 +39,8 @@
 - 쓸 수 있는 변수: `--m3-primary`, `--m3-on-primary`, `--m3-primary-container`, `--m3-on-primary-container`, `--m3-secondary(-container)`, `--m3-tertiary(-container)`, `--m3-error(-container)`, `--m3-surface`, `--m3-surface-container-{lowest,low,'',high,highest}`, `--m3-on-surface(-variant)`, `--m3-outline(-variant)`, `--m3-inverse-*`
 - 용법: 강조=primary, 선택 상태 배경=secondary-container, 엔티티/특수=tertiary, 파괴적=error. Tailwind에선 `bg-[var(--m3-primary)]` 식 arbitrary value로 쓴다.
 - 예외적으로 허용된 고정색: 도구 로고·카드 헤더의 브랜드색 (Slack `#4A154B`, Gmail `#C5221F`, Notion `#191919`, Calendar `#1A73E8`), 그래프 소스색(`SOURCE_COLOR`), 팀원 아바타색.
-- **라이트 모드는 인터콤풍 뉴트럴**(화이트 서피스 + gray-200 헤어라인 + 니어블랙 프라이머리 버튼)로 theme.ts에 의도적으로 하드코딩되어 있다 — "M3 뉴트럴로 정정"하지 말 것. 다크는 M3 뉴트럴 유지. (이전의 하늘빛 에어리 톤은 이 결정으로 대체됨)
+- **라이트 모드는 인터콤풍 뉴트럴**(화이트 서피스 + gray-200 헤어라인)로 theme.ts에 의도적으로 하드코딩되어 있다 — "M3 뉴트럴로 정정"하지 말 것. 다크는 M3 뉴트럴 유지.
+- **포인트 컬러 = Cobalt Indigo `#4051CB`** (theme.ts 시드). 라이트 모드 프라이머리 CTA(brandSolid)는 이 코발트, 다크 모드 CTA는 가독성 때문에 화이트 버튼 유지. 포인트 컬러는 CTA·활성 상태·@Onflow 멘션·AI 강조에만 — 화면의 5–10%를 넘기지 말 것. (이전의 니어블랙 CTA는 이 결정으로 대체됨)
 
 ### 형태
 - 카드: `Card` 컴포넌트(`src/components/ui.tsx`) = 화이트 + **헤어라인 보더**(outline-variant) + 아주 옅은 그림자 (인터콤 레퍼런스). 새 카드도 반드시 이 패턴. 두꺼운 보더·진한 그림자 금지.

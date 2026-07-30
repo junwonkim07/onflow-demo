@@ -68,15 +68,21 @@ body {
   --seed-font-family: inherit;
 }
 
-/* 홈 히어로 전용 보라 워시 — 유일하게 허용된 그라데이션.
-   primary/tertiary color-mix ≤7%로 테마를 따라가며, 이보다 진하게 올리지 말 것. */
+/* 홈 프레임 상단 보라 워시 — 유일하게 허용된 그라데이션.
+   프레임 풀블리드 레이어(App.tsx)에 얹어서 모서리 잘림이 없고,
+   primary/tertiary color-mix ≤7%로 테마를 따라간다. 이보다 진하게 올리지 말 것. */
 .hero-tint {
   position: absolute;
-  inset: -4rem -6rem 0;
+  inset: 0 0 auto;
+  height: 34rem;
   pointer-events: none;
   background:
-    radial-gradient(52rem 24rem at 24% 12%, color-mix(in srgb, var(--m3-primary) 7%, transparent), transparent 70%),
-    radial-gradient(46rem 22rem at 82% 0%, color-mix(in srgb, var(--m3-tertiary) 6%, transparent), transparent 70%);
+    radial-gradient(56rem 34rem at 26% -8rem, color-mix(in srgb, var(--m3-primary) 14%, transparent), transparent 72%),
+    radial-gradient(48rem 30rem at 78% -10rem, color-mix(in srgb, var(--m3-tertiary) 11%, transparent), transparent 72%);
+  animation: tint-in 0.9s ease both;
+}
+@keyframes tint-in {
+  from { opacity: 0; }
 }
 
 /* ---------- Material 3 상태 표현 ---------- */
@@ -131,4 +137,5 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .agent-dot--thinking { animation: none; }
   .progress-line::after { animation: none; width: 100%; left: 0; }
+  .hero-tint { animation: none; }
 }

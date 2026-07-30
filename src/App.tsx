@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
+import { spatialExpressive } from './motion'
 import {
   IconHomeRegular,
   IconChattingRegular,
@@ -42,6 +43,18 @@ const TITLES: Record<Page, string> = {
   approvals: 'Approvals',
   knowledge: 'Company Memory',
   integrations: 'Integrations',
+}
+
+/** 레일 아이콘 호버 라벨 — 네이티브 title 대신 즉시 뜨는 커스텀 툴팁 */
+function RailTooltip({ label }: { label: string }) {
+  return (
+    <span
+      className="pointer-events-none absolute left-full ml-2 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-md bg-[var(--m3-inverse-surface)] text-[var(--m3-inverse-on-surface)] text-[11px] font-medium px-2 py-1 opacity-0 scale-95 origin-left group-hover:opacity-100 group-hover:scale-100 transition-all duration-150"
+      role="tooltip"
+    >
+      {label}
+    </span>
+  )
 }
 
 export default function App() {
@@ -107,17 +120,16 @@ export default function App() {
     <MotionConfig reducedMotion="user">
     <div className="h-screen flex bg-[var(--m3-surface)] text-[var(--m3-on-surface)]">
       {/* M3 Navigation Rail */}
-      <nav className="relative w-16 shrink-0 flex flex-col items-center py-4 gap-3 glass border-r border-[var(--m3-outline-variant)]">
+      <nav className="relative z-30 w-16 shrink-0 flex flex-col items-center py-4 gap-3 glass border-r border-[var(--m3-outline-variant)]">
         {NAV.map(({ key, label, Icon }) => {
           const active = page === key
           return (
             <button
               key={key}
               onClick={() => setPage(key)}
-              title={label}
               aria-label={label}
               aria-current={active ? 'page' : undefined}
-              className={`relative w-11 h-11 rounded-lg grid place-items-center transition-colors ${
+              className={`group relative w-11 h-11 rounded-lg grid place-items-center transition-colors ${
                 active
                   ? 'bg-[var(--m3-surface-container-high)] text-[var(--m3-on-surface)]'
                   : 'text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]'
@@ -129,16 +141,17 @@ export default function App() {
                   {pendingCount}
                 </span>
               )}
+              <RailTooltip label={label} />
             </button>
           )
         })}
         <div className="flex-1" />
         <button
-          title="Settings"
           aria-label="Settings"
-          className="w-11 h-11 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]"
+          className="group relative w-11 h-11 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]"
         >
           <IconSettingRegular width={22} height={22} />
+          <RailTooltip label="Settings" />
         </button>
       </nav>
 
@@ -251,7 +264,9 @@ export default function App() {
             ) : (
               /* 워크스페이스와 같은 인셋 윈도우 프레임 + 공통 우측 패널 — 탭 간 연결성 */
               <div className="flex-1 min-h-0 flex gap-3 m-3 mt-0">
-                <div className={`flex-1 min-h-0 rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-y-auto ${page === 'home' ? 'no-scrollbar' : ''}`}>
+                <div className={`relative flex-1 min-h-0 rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-y-auto ${page === 'home' ? 'no-scrollbar' : ''}`}>
+                  {/* 홈 전용 보라 워시 — 프레임 풀블리드라 모서리 잘림이 없다 */}
+                  {page === 'home' && <div className="hero-tint" aria-hidden />}
                   <div className="px-10 py-8 min-h-full flex">
                     {page === 'home' && (
                       <Home
@@ -267,14 +282,25 @@ export default function App() {
                     {page === 'integrations' && <Integrations />}
                   </div>
                 </div>
-                {asideOpen && (
-                  <GlobalAside
-                    pendingCount={pendingCount}
-                    recent={recent}
-                    onAsk={openBrief}
-                    goApprovals={() => setPage('approvals')}
-                  />
-                )}
+                <AnimatePresence initial={false}>
+                  {asideOpen && (
+                    <motion.div
+                      key="aside"
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: 'auto', opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      transition={spatialExpressive}
+                      className="min-h-0 flex overflow-hidden"
+                    >
+                      <GlobalAside
+                        pendingCount={pendingCount}
+                        recent={recent}
+                        onAsk={openBrief}
+                        goApprovals={() => setPage('approvals')}
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
           </motion.div>
