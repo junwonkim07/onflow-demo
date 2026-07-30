@@ -182,6 +182,7 @@ export default function App() {
                       pendingCount={pendingCount}
                       recent={recent}
                       onOpenBrief={openBrief}
+                      onSearch={() => setPaletteOpen(true)}
                       goWorkspace={() => setPage('workspace')}
                       goApprovals={() => setPage('approvals')}
                     />

@@ -271,16 +271,14 @@ const initialSessions: Session[] = [
         text: 'Matches the spec in their install guide (handle-side, 1.2m). I’d attach this to the PoC report.\n\nOn commercials: quote sent — annual maintenance + monthly operations subscription. Only the contract meeting is left. Owner: Sanghyun Lee.',
         time: 'yesterday',
         sources: [
-          { key: 'gmail', label: 'Quote · Jul 22' },
+          { key: 'gmail', label: 'Quote' },
           { key: 'calendar', label: 'Contract meeting' },
-          { key: 'notion', label: 'Install guide v2' },
+          { key: 'notion', label: 'Install guide' },
         ],
       },
     ],
   },
 ]
-
-const AVATAR_COLORS = ['#0ea5e9', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899']
 
 export default function Workspace({
   onExecuted,
@@ -437,7 +435,7 @@ export default function Workspace({
           text: finalDraft,
           time: 'now',
           tool: intent.tool.key,
-          toolNote: `${intent.tool.name} · ${intent.target} · Done`,
+          toolNote: 'Done',
         },
       ])
       onExecuted(intent.title, intent.tool.key)
@@ -682,7 +680,7 @@ export default function Workspace({
           </div>
         ) : (
         <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5">
-          {listSessions.map((s, i) => {
+          {listSessions.map(s => {
             const active = s.id === activeId
             const last = s.thread[s.thread.length - 1]
             return (
@@ -696,10 +694,7 @@ export default function Workspace({
                   active ? 'bg-[var(--m3-surface-container)]' : 'hover:bg-[var(--m3-surface-container-low)]'
                 }`}
               >
-                <span
-                  className="w-7 h-7 rounded-full shrink-0 grid place-items-center text-[11px] font-bold text-white"
-                  style={{ backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }}
-                >
+                <span className="w-7 h-7 rounded-lg shrink-0 grid place-items-center text-[11px] font-bold bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)]">
                   {s.title[0]}
                 </span>
                 <span className="min-w-0 flex-1">
@@ -884,7 +879,7 @@ export default function Workspace({
                   </div>
                   <div className="flex items-center mt-2.5">
                     <span className="text-[11px] text-[var(--m3-on-surface-variant)]">
-                      Your choice is saved and auto-applied to future conflicts
+                      Saved for future conflicts
                     </span>
                     <div className="ml-auto">
                       <ActionButton size="xsmall" variant="neutralWeak" onClick={() => setDismissed(true)}>
@@ -931,7 +926,7 @@ export default function Workspace({
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1.5 text-[11px] text-[var(--m3-on-surface-variant)]">
                       <IconLockRegular width={12} height={12} />
-                      Nothing is sent until you run it · your edits teach the next draft
+                      Nothing sends until you run it
                     </span>
                     <div className="ml-auto flex gap-2">
                       <ActionButton
@@ -1157,7 +1152,7 @@ export default function Workspace({
                 })}
               </ul>
               <p className="mt-3 pt-3 border-t border-[var(--m3-outline-variant)] text-[11px] text-[var(--m3-on-surface-variant)] leading-relaxed">
-                Search covers only what you can access. Documents outside your permissions are never revealed to exist.
+                Only what you can access — nothing else is revealed to exist.
               </p>
             </div>
             <div>
@@ -1227,9 +1222,7 @@ function ItemDetail({ item, onReply }: { item: InboxItem; onReply: () => void })
             >
               <IconWriteRegular width={14} height={14} /> Draft reply in a session
             </button>
-            <span className="text-[11px] text-[var(--m3-on-surface-variant)]">
-              Opens a new session with the reply pre-typed — nothing sends without you
-            </span>
+            <span className="text-[11px] text-[var(--m3-on-surface-variant)]">Nothing sends without you</span>
           </div>
         </div>
       </div>
@@ -1400,7 +1393,7 @@ function EmptyState({ onPick }: { onPick: (text: string) => void }) {
           transition={{ ...spatialExpressive, delay: 0.12 }}
           className="text-[12px] text-[var(--m3-on-surface-variant)] mt-1"
         >
-          Connected to your company data · anything outbound is always previewed before it runs
+          Connected to company data · previewed before it runs
         </motion.p>
       </div>
       <div className="flex flex-wrap justify-center gap-1.5 max-w-md">

@@ -20,7 +20,7 @@ export default function Approvals({
     <div className="max-w-2xl w-full mx-auto">
       <PageHeader
         title="Approvals"
-        desc="Drafts shown exactly as they’ll be sent. Nothing goes out before you approve."
+        desc="Nothing goes out before you approve."
         right={
           <span className="flex items-center gap-1.5 text-xs text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-full px-3 py-1.5">
             <IconLockRegular width={13} height={13} /> No auto-send
@@ -35,7 +35,7 @@ export default function Approvals({
               {a.tool === 'gmail' ? <MailPreview a={a} /> : <SlackPreview a={a} />}
               <div className="flex items-center mt-2 px-1">
                 <span className="text-[11px] text-[var(--m3-on-surface-variant)]">
-                  {a.requestedBy} · {a.time} · click the draft to edit inline
+                  {a.requestedBy} · {a.time}
                 </span>
                 <div className="ml-auto flex gap-2">
                   <ActionButton size="small" variant="neutralWeak" onClick={() => onDecide(a.id, 'rejected')}>

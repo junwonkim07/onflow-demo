@@ -35,8 +35,8 @@ export const initialThread: ThreadMessage[] = [
     text: 'Logged to the ops journal. ERP shows 92% rack utilization at the Icheon site — 3PL overflow kicks in at 95%, so I’d flag this in tomorrow’s logistics sync.',
     time: '11:03 AM',
     sources: [
-      { key: 'erp', label: 'Sabangnet · rack utilization' },
-      { key: 'notion', label: 'Ops journal · Jul 31' },
+      { key: 'erp', label: 'Rack utilization' },
+      { key: 'notion', label: 'Ops journal' },
     ],
   },
   { id: 3, from: 'me', text: 'Did tomorrow’s design review get moved to 3 PM?', time: '4:52 PM' },
@@ -66,9 +66,9 @@ export const memberSchedules: { name: string; color: string; busy: [number, numb
 export const aqaraBriefing: { text: string; sources: { key: SourceKey; label: string }[] } = {
   text: 'Here’s where Aqara Life stands.\n\n1. Proposal & quote delivered — includes annual maintenance + monthly operations subscription (Jul 22)\n2. Scheduling the walkthrough — proposed Mon 2 PM, Episode Gangnam 262. Owner: Sanghyun Lee\n3. Next: contract meeting → lock the MVP/PoC timeline\n\nThe calendar shows 3 related events (intro · contract · contract review).',
   sources: [
-    { key: 'gmail', label: '9 quote & scheduling emails · Jul 22' },
-    { key: 'calendar', label: '3 Aqara Life events' },
-    { key: 'notion', label: 'PoC roadmap · meeting notes' },
+    { key: 'gmail', label: '9 threads' },
+    { key: 'calendar', label: '3 events' },
+    { key: 'notion', label: 'PoC roadmap' },
   ],
 }
 

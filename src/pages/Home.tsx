@@ -1,45 +1,83 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { IconArrowRegular, IconChattingSendRegular, IconAddRegular } from '@seed-design/icon'
+import { IconArrowRegular, IconAddRegular, IconExpandMoreRegular, IconLockRegular, IconSearchRegular } from '@seed-design/icon'
 import { briefing, homeStats, asset, type RecentTask } from '../data'
 import { Card, SourceBadge, sourceName } from '../components/ui'
 import { spatialExpressive } from '../motion'
 
-/** 홈 채팅바 — Gemini 스타일 필 인풋. 입력하면 워크스페이스로 넘어가 자동 타이핑된다 */
-function HomeChatBar({ onSubmit }: { onSubmit: (text: string) => void }) {
+/** 라이브 시계 — 개인화 대신 시간이 히어로다 */
+function Clock() {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(t)
+  }, [])
+  const hh = String(now.getHours()).padStart(2, '0')
+  const mm = String(now.getMinutes()).padStart(2, '0')
+  return (
+    <div className="text-center">
+      <div className="text-[clamp(44px,6vw,64px)] font-semibold tracking-tight tabular-nums leading-none">
+        {hh}:{mm}
+      </div>
+      <div className="text-[15px] text-[var(--m3-on-surface-variant)] mt-3">
+        Thursday, July 31 · Synced 128 items from 4 sources overnight
+      </div>
+    </div>
+  )
+}
+
+/** Aside 스타일 커맨드 바 — Search | Ask AI 세그먼트 + 아래 컨트롤 칩 */
+function HomeChatBar({ onSubmit, onSearch }: { onSubmit: (text: string) => void; onSearch: () => void }) {
   const [v, setV] = useState('')
   const go = () => {
     if (!v.trim()) return
     onSubmit(v.trim())
     setV('')
   }
+  const Chip = ({ children, right }: { children: React.ReactNode; right?: boolean }) => (
+    <button
+      className={`flex items-center gap-1 text-[12px] text-[var(--m3-on-surface-variant)] px-2 py-1 rounded-lg hover:bg-[var(--m3-surface-container)] transition-colors ${right ? '' : ''}`}
+    >
+      {children}
+      <IconExpandMoreRegular width={11} height={11} />
+    </button>
+  )
   return (
-    <div className="flex items-center gap-1.5 rounded-full bg-[var(--m3-surface-container)] pl-2 pr-2 h-14 focus-within:bg-[var(--m3-surface-container-high)] transition-colors">
-      <button
-        aria-label="Attach"
-        className="w-10 h-10 rounded-full grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container-high)] shrink-0"
-      >
-        <IconAddRegular width={20} height={20} />
-      </button>
-      <input
-        value={v}
-        onChange={e => setV(e.target.value)}
-        onKeyDown={e => e.key === 'Enter' && go()}
-        placeholder="Ask Onflow"
-        className="flex-1 bg-transparent outline-none text-[16px] min-w-0"
-      />
-      <button
-        onClick={go}
-        aria-label="Ask"
-        disabled={!v.trim()}
-        className={`w-10 h-10 rounded-full grid place-items-center shrink-0 transition-colors ${
-          v.trim()
-            ? 'bg-[var(--seed-color-bg-brand-solid)] text-white'
-            : 'text-[var(--m3-on-surface-variant)]'
-        }`}
-      >
-        <IconChattingSendRegular width={17} height={17} />
-      </button>
+    <div>
+      <div className="flex items-center gap-2 rounded-2xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] pl-5 pr-2 h-14 focus-within:border-[var(--m3-outline)] transition-colors">
+        <input
+          value={v}
+          onChange={e => setV(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && go()}
+          placeholder="Ask a task, @ for context"
+          className="flex-1 bg-transparent outline-none text-[15px] min-w-0"
+        />
+        <div className="flex items-center rounded-xl bg-[var(--m3-surface-container)] p-1 shrink-0">
+          <button
+            onClick={onSearch}
+            className="h-8 px-3.5 rounded-lg text-[13px] text-[var(--m3-on-surface-variant)] hover:text-[var(--m3-on-surface)] transition-colors flex items-center gap-1.5"
+          >
+            <IconSearchRegular width={13} height={13} /> Search
+          </button>
+          <button
+            onClick={go}
+            className="h-8 px-3.5 rounded-lg text-[13px] font-semibold bg-[var(--m3-surface-container-lowest)] border border-[var(--m3-outline-variant)]"
+          >
+            Ask AI
+          </button>
+        </div>
+      </div>
+      <div className="flex items-center px-2 mt-2">
+        <button aria-label="Attach" className="w-7 h-7 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]">
+          <IconAddRegular width={15} height={15} />
+        </button>
+        <Chip>
+          <IconLockRegular width={12} height={12} /> Guard
+        </Chip>
+        <div className="flex-1" />
+        <Chip>Gemini 2.5</Chip>
+        <Chip>High</Chip>
+      </div>
     </div>
   )
 }
@@ -48,12 +86,14 @@ export default function Home({
   pendingCount,
   recent,
   onOpenBrief,
+  onSearch,
   goWorkspace,
   goApprovals,
 }: {
   pendingCount: number
   recent: RecentTask[]
   onOpenBrief: (prompt: string) => void
+  onSearch: () => void
   goWorkspace: () => void
   goApprovals: () => void
 }) {
@@ -65,31 +105,18 @@ export default function Home({
 
   return (
     <div className="max-w-5xl w-full mx-auto relative">
-      {/* 히어로 + 채팅바 */}
-      <div className="relative min-h-[26vh] flex flex-col justify-end pb-8">
-        <motion.h1
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={spatialExpressive}
-          className="text-[clamp(30px,3.5vw,40px)] font-bold tracking-tight leading-tight"
-        >
-          Good morning, Junwon
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spatialExpressive, delay: 0.08 }}
-          className="text-[16px] text-[var(--m3-on-surface-variant)] mt-2.5"
-        >
-          Thursday, July 31 · Synced 128 items from 4 sources overnight
-        </motion.p>
+      {/* 히어로 — 시계 + 커맨드 바 (중앙) */}
+      <div className="relative min-h-[30vh] flex flex-col items-center justify-end pb-10">
+        <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={spatialExpressive}>
+          <Clock />
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ ...spatialExpressive, delay: 0.14 }}
-          className="mt-5 max-w-2xl"
+          transition={{ ...spatialExpressive, delay: 0.1 }}
+          className="mt-7 w-full max-w-2xl mx-auto"
         >
-          <HomeChatBar onSubmit={onOpenBrief} />
+          <HomeChatBar onSubmit={onOpenBrief} onSearch={onSearch} />
         </motion.div>
       </div>
 
@@ -190,7 +217,7 @@ export default function Home({
         </div>
 
         <p className="text-xs text-[var(--m3-on-surface-variant)] mt-8 mb-4 text-center">
-          Everything in the briefing is a draft — nothing leaves the company without approval.
+          Drafts only — nothing leaves without approval.
         </p>
       </div>
     </div>

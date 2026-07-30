@@ -2,7 +2,7 @@
 
 body {
   @apply antialiased;
-  font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Inter", system-ui, sans-serif;
+  font-family: "Noto Serif", "Noto Serif KR", Georgia, serif;
   background: var(--m3-surface);
   color: var(--m3-on-surface);
 }

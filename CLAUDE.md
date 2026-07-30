@@ -55,7 +55,7 @@
 - 에이전트 상태는 `agent-dot` (`index.css`): 대기=정지, 생각=`--thinking` 펄스, 카드 준비=`--ready` 링. 이 3-상태 문법을 유지한다.
 
 ### 타이포
-- Pretendard (index.html에서 CDN 로드). 크기는 주변 코드 패턴을 따른다 (본문 14–15px, 메타 11–13px, 페이지 타이틀 26px, 홈 히어로 clamp 32–44px).
+- **Noto Serif / Noto Serif KR** (index.html Google Fonts) — 앱 전체가 세리프다. 개인화 인사말 대신 홈 히어로는 라이브 시계. 크기는 주변 코드 패턴을 따른다.
 
 ---
 

@@ -16,7 +16,7 @@ export default function Integrations() {
     <div className="max-w-4xl w-full mx-auto">
       <PageHeader
         title="Integrations"
-        desc={`${connectedCount} tools connected · 1,240 items synced today · every write runs only after approval`}
+        desc={`${connectedCount} connected · 1,240 synced today`}
       />
 
       <div className="grid grid-cols-2 gap-3">
