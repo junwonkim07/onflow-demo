@@ -90,7 +90,7 @@ export default function Home({
   return (
     <div className="max-w-5xl w-full mx-auto relative">
       {/* 히어로 — 인사말 + 커맨드 바 (이전 버전) */}
-      <div className="relative min-h-[42vh] flex flex-col justify-end pb-24">
+      <div className="relative min-h-[38vh] flex flex-col justify-end pb-10">
         <motion.h1
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}

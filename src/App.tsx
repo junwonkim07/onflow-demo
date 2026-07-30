@@ -4,7 +4,7 @@ import {
   IconHomeRegular,
   IconChattingRegular,
   IconListCheckRegular,
-  IconSearchDocRegular,
+  IconHousekeepingBookRegular,
   IconToolboxRegular,
   IconSettingRegular,
   IconNotificationRegular,
@@ -32,7 +32,7 @@ const NAV: { key: Page; label: string; Icon: IconComp }[] = [
   { key: 'home', label: 'Home', Icon: IconHomeRegular },
   { key: 'workspace', label: 'Workspace', Icon: IconChattingRegular },
   { key: 'approvals', label: 'Approvals', Icon: IconListCheckRegular },
-  { key: 'knowledge', label: 'Memory', Icon: IconSearchDocRegular },
+  { key: 'knowledge', label: 'Memory', Icon: IconHousekeepingBookRegular },
   { key: 'integrations', label: 'Integrations', Icon: IconToolboxRegular },
 ]
 
