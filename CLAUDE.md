@@ -39,6 +39,7 @@
 - 쓸 수 있는 변수: `--m3-primary`, `--m3-on-primary`, `--m3-primary-container`, `--m3-on-primary-container`, `--m3-secondary(-container)`, `--m3-tertiary(-container)`, `--m3-error(-container)`, `--m3-surface`, `--m3-surface-container-{lowest,low,'',high,highest}`, `--m3-on-surface(-variant)`, `--m3-outline(-variant)`, `--m3-inverse-*`
 - 용법: 강조=primary, 선택 상태 배경=secondary-container, 엔티티/특수=tertiary, 파괴적=error. Tailwind에선 `bg-[var(--m3-primary)]` 식 arbitrary value로 쓴다.
 - 예외적으로 허용된 고정색: 도구 로고·카드 헤더의 브랜드색 (Slack `#4A154B`, Gmail `#C5221F`, Notion `#191919`, Calendar `#1A73E8`), 그래프 소스색(`SOURCE_COLOR`), 팀원 아바타색.
+- **라이트 모드 서피스는 하늘빛 에어리 커스텀**(#eef4fa 계열, Aside 브라우저 레퍼런스)이다 — theme.ts에 의도적으로 하드코딩되어 있으니 "M3 뉴트럴로 정정"하지 말 것. 다크는 M3 뉴트럴 유지.
 
 ### 형태
 - 카드: **보더 없음**. `Card` 컴포넌트(`src/components/ui.tsx`) = surface + 은은한 그림자. 새 카드도 반드시 이걸 쓰거나 같은 패턴을 따른다. `border border-...` 클래스로 외곽선 치지 말 것 (입력창 컴포저만 예외).
@@ -101,6 +102,8 @@ Workspace 컴포저 위에 뜨는 카드는 세 종류이고, **우선순위가 
 - **브랜드 색 바꾸기**: `theme.ts`의 `SOURCE = '#4E5FD9'` 한 줄. 절대 개별 컴포넌트에서 색을 덮지 말 것.
 - **그래프 노드 추가**: `Knowledge.tsx`의 `ENTITIES`/`EDGES` (+ 문서는 data.ts `docs`). 노드 15개 이하 유지 — 그래프는 50노드 넘으면 hairball이 된다.
 - **새 페이지**: `pages/`에 추가 → `App.tsx`의 `Page` 타입 + `NAV` + `TITLES` + 렌더 분기. 페이지 헤더는 `PageHeader` 사용.
+- **고스트 자동완성 문장 추가**: `Workspace.tsx`의 `SUGGESTIONS` 배열. 입력 접두어가 일치하면 나머지가 섀도로 뜨고 **Tab**으로 완성된다. 여기 넣는 문장도 감지 정규식에 걸리는 문장이어야 한다.
+- **Recent tasks(홈)**: 시드는 `data.ts`의 `seedRecent`, 실행/승인 시 `App.tsx`의 `recordRun`이 자동으로 쌓는다.
 
 ---
 

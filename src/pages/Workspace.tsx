@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ActionButton } from 'seed-design/ui/action-button'
 import {
@@ -10,6 +10,7 @@ import {
   IconCalendarRegular,
   IconWarningRegular,
   IconAddRegular,
+  IconCheckFlowerRegular,
 } from '@seed-design/icon'
 import {
   detect,
@@ -21,6 +22,7 @@ import {
   type Intent,
   type AvailabilityAnswer,
   type ConflictAnswer,
+  type ToolKey,
 } from '../intent'
 import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, type ThreadMessage, type SourceKey } from '../data'
 import { Card, SourceBadge } from '../components/ui'
@@ -31,6 +33,21 @@ const PLACEHOLDERS = [
   'When is everyone free for tomorrow’s meeting?',
   'Notify logistics about SKUs below safety stock',
 ]
+
+/** 고스트 자동완성 풀 — 앞부분이 일치하면 나머지가 섀도로 뜨고 Tab으로 완성된다 */
+const SUGGESTIONS = [
+  ...new Set([
+    ...PLACEHOLDERS,
+    ...briefing.map(b => b.prompt),
+    'Trying to set a meeting tomorrow — when is everyone free?',
+    'Email Sanghyun to schedule the meeting',
+    'Post in #design-team that the review moved from 2pm to 3pm',
+  ]),
+]
+
+/** 메시지·세션 ID — Date.now() 충돌(같은 ms 두 번) 방지용 단조 카운터 */
+let seq = 1000
+const nextId = () => ++seq
 
 /* ---------- 자동 시연 시나리오 (실고객 이력 기반) ---------- */
 
@@ -109,7 +126,7 @@ export default function Workspace({
   seedPrompt,
   onSeedConsumed,
 }: {
-  onExecuted: (summary: string) => void
+  onExecuted: (summary: string, tool: ToolKey) => void
   seedPrompt?: string | null
   onSeedConsumed?: () => void
 }) {
@@ -134,7 +151,7 @@ export default function Workspace({
   }
 
   const newSession = () => {
-    const id = Date.now()
+    const id = nextId()
     setSessions(ss => [{ id, title: 'New session', titled: false, thread: [] }, ...ss])
     setActiveId(id)
     clearAll()
@@ -194,6 +211,14 @@ export default function Workspace({
   const anyCard = showActionCard || !!answer || !!conflict
   const dotClass = running || thinking ? 'agent-dot--thinking' : anyCard ? 'agent-dot--ready' : ''
 
+  // 고스트 자동완성 — 입력 접두어와 일치하는 제안의 나머지를 섀도로 보여주고 Tab으로 완성
+  const ghost = useMemo(() => {
+    const t = input
+    if (t.trim().length < 2 || t.includes('\n')) return ''
+    const m = SUGGESTIONS.find(s => s.toLowerCase().startsWith(t.toLowerCase()) && s.length > t.length)
+    return m ? m.slice(t.length) : ''
+  }, [input])
+
   const clearAll = () => {
     setInput('')
     setDetected(null)
@@ -209,9 +234,9 @@ export default function Workspace({
     const finalDraft = stateRef.current.draft
     setTimeout(() => {
       pushMessages([
-        { id: Date.now(), from: 'me', text: userText, time: 'now' },
+        { id: nextId(), from: 'me', text: userText, time: 'now' },
         {
-          id: Date.now() + 1,
+          id: nextId(),
           from: 'agent',
           text: finalDraft,
           time: 'now',
@@ -219,7 +244,7 @@ export default function Workspace({
           toolNote: `${intent.tool.name} · ${intent.target} · Done`,
         },
       ])
-      onExecuted(`${intent.tool.name} — ${intent.title}`)
+      onExecuted(intent.title, intent.tool.key)
       clearAll()
     }, 800)
   }
@@ -243,8 +268,8 @@ export default function Workspace({
   const sendPlain = () => {
     if (!input.trim()) return
     pushMessages([
-      { id: Date.now(), from: 'me', text: input.trim(), time: 'now' },
-      { id: Date.now() + 1, from: 'agent', text: 'Got it — pulling the relevant data together for you.', time: 'now' },
+      { id: nextId(), from: 'me', text: input.trim(), time: 'now' },
+      { id: nextId(), from: 'agent', text: 'Got it — pulling the relevant data together for you.', time: 'now' },
     ])
     setInput('')
   }
@@ -310,8 +335,8 @@ export default function Workspace({
       } else if (step.t === 'agentReply') {
         const userText = stateRef.current.input
         pushMessages([
-          { id: Date.now(), from: 'me', text: userText, time: 'now' },
-          { id: Date.now() + 1, from: 'agent', text: aqaraBriefing.text, time: 'now', sources: aqaraBriefing.sources },
+          { id: nextId(), from: 'me', text: userText, time: 'now' },
+          { id: nextId(), from: 'agent', text: aqaraBriefing.text, time: 'now', sources: aqaraBriefing.sources },
         ])
         setInput('')
         setDetected(null)
@@ -608,6 +633,12 @@ export default function Workspace({
                   if (forced) setForced(null)
                 }}
                 onKeyDown={e => {
+                  if (e.key === 'Tab' && !e.shiftKey && ghost) {
+                    e.preventDefault()
+                    cancelDemo()
+                    setInput(input + ghost)
+                    return
+                  }
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault()
                     if (showActionCard) execute()
@@ -618,6 +649,12 @@ export default function Workspace({
                 className="w-full resize-none outline-none text-[15px] leading-6 bg-transparent max-h-32"
                 aria-label="Message input"
               />
+              {ghost && (
+                <div className="absolute inset-0 pointer-events-none text-[15px] leading-6 whitespace-pre-wrap break-words" aria-hidden>
+                  <span className="invisible">{input}</span>
+                  <span className="text-[var(--m3-on-surface-variant)] opacity-60">{ghost}</span>
+                </div>
+              )}
               {!input && (
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -726,10 +763,10 @@ function EmptyState({ onPick }: { onPick: (text: string) => void }) {
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={spatialExpressive}
-        className="w-14 h-14 rounded-2xl bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)] grid place-items-center text-2xl font-bold"
+        className="w-14 h-14 rounded-full bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)] grid place-items-center"
         aria-hidden
       >
-        O
+        <IconCheckFlowerRegular width={26} height={26} />
       </motion.span>
       <div className="text-center">
         <motion.h2

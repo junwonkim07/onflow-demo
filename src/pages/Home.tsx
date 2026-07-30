@@ -1,16 +1,18 @@
 import { motion } from 'framer-motion'
 import { IconArrowRegular } from '@seed-design/icon'
-import { briefing, homeStats } from '../data'
+import { briefing, homeStats, type RecentTask } from '../data'
 import { Card, SourceBadge, sourceName } from '../components/ui'
 import { spatialExpressive } from '../motion'
 
 export default function Home({
   pendingCount,
+  recent,
   onOpenBrief,
   goWorkspace,
   goApprovals,
 }: {
   pendingCount: number
+  recent: RecentTask[]
   onOpenBrief: (prompt: string) => void
   goWorkspace: () => void
   goApprovals: () => void
@@ -58,6 +60,33 @@ export default function Home({
                   <div className="text-[28px] font-bold mt-1.5 tabular-nums tracking-tight">{s.value}</div>
                   <div className="text-xs text-[var(--m3-on-surface-variant)] mt-1">{s.sub}</div>
                 </button>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Recent tasks — Aside 스타일 활동 카드 */}
+        <h2 className="font-bold text-lg mb-4">Recent tasks</h2>
+        <div className="grid grid-cols-3 gap-5 mb-10">
+          {recent.slice(0, 3).map((t, i) => (
+            <motion.div
+              key={t.title + t.when}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spatialExpressive, delay: 0.18 + i * 0.05 }}
+            >
+              <Card className="p-4 h-full">
+                <div className="text-xs text-[var(--m3-on-surface-variant)] mb-1.5">
+                  {t.when === 'just now' ? 'Just now' : t.when}
+                </div>
+                <div className="font-semibold text-[15px] leading-snug line-clamp-2">{t.title}</div>
+                <div className="flex items-center gap-2 mt-3">
+                  <SourceBadge source={t.tool} size={22} />
+                  <span className="text-[11px] text-[var(--m3-on-surface-variant)]">{sourceName(t.tool)}</span>
+                  <span className="ml-auto text-[11px] px-2 py-0.5 rounded-lg bg-[var(--m3-secondary-container)] text-[var(--m3-on-secondary-container)]">
+                    Done
+                  </span>
+                </div>
               </Card>
             </motion.div>
           ))}

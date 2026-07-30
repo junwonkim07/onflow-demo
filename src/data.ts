@@ -75,6 +75,16 @@ export const homeStats = [
   { label: 'Ran yesterday', value: '12', sub: 'All after approval' },
 ]
 
+/* ---------- Recent tasks (Aside-style activity cards) ---------- */
+
+export type RecentTask = { title: string; tool: ToolKey; when: string }
+
+export const seedRecent: RecentTask[] = [
+  { title: 'Sent Aqara Life quote', tool: 'gmail', when: 'yesterday' },
+  { title: 'Filed weekly minutes to Notion', tool: 'notion', when: 'yesterday' },
+  { title: 'Order-deadline reminder', tool: 'slack', when: 'Monday' },
+]
+
 /* ---------- Approval queue ---------- */
 
 export type Approval = {

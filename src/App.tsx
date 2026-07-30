@@ -14,7 +14,9 @@ import {
   IconSunRegular,
 } from '@seed-design/icon'
 import { applyTheme } from './theme'
-import { initialApprovals, briefing, docs, type Approval } from './data'
+import { Component, type ReactNode } from 'react'
+import { initialApprovals, briefing, docs, seedRecent, type Approval, type RecentTask } from './data'
+import type { ToolKey } from './intent'
 import Home from './pages/Home'
 import Workspace from './pages/Workspace'
 import Approvals from './pages/Approvals'
@@ -47,6 +49,12 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null)
   const [seed, setSeed] = useState<string | null>(null)
   const [paletteOpen, setPaletteOpen] = useState(false)
+  const [recent, setRecent] = useState<RecentTask[]>(seedRecent)
+
+  const recordRun = (title: string, tool: ToolKey) => {
+    setToast(`Done — ${title}`)
+    setRecent(r => [{ title, tool, when: 'just now' }, ...r].slice(0, 6))
+  }
 
   const openBrief = (prompt: string) => {
     setSeed(prompt)
@@ -81,17 +89,18 @@ export default function App() {
   const decide = (id: number, status: 'approved' | 'rejected') => {
     setApprovals(xs => xs.map(x => (x.id === id ? { ...x, status } : x)))
     const a = approvals.find(x => x.id === id)
-    if (a) setToast(status === 'approved' ? `Sent — ${a.title}` : `Rejected — ${a.title}`)
+    if (a) {
+      setToast(status === 'approved' ? `Sent — ${a.title}` : `Rejected — ${a.title}`)
+      if (status === 'approved') setRecent(r => [{ title: a.title, tool: a.tool, when: 'just now' }, ...r].slice(0, 6))
+    }
   }
 
   return (
+    <ErrorBoundary>
     <MotionConfig reducedMotion="user">
     <div className="h-screen flex bg-[var(--m3-surface)] text-[var(--m3-on-surface)]">
       {/* M3 Navigation Rail */}
-      <nav className="relative w-20 shrink-0 flex flex-col items-center py-4 gap-1 bg-[var(--m3-surface-container-low)]">
-        <div className="w-10 h-10 rounded-xl bg-[var(--m3-primary)] text-[var(--m3-on-primary)] grid place-items-center font-bold text-lg mb-4">
-          O
-        </div>
+      <nav className="relative w-20 shrink-0 flex flex-col items-center py-5 gap-1 bg-[var(--m3-surface-container-low)]">
         {NAV.map(({ key, label, Icon }) => {
           const active = page === key
           return (
@@ -168,17 +177,14 @@ export default function App() {
             {page === 'home' && (
               <Home
                 pendingCount={pendingCount}
+                recent={recent}
                 onOpenBrief={openBrief}
                 goWorkspace={() => setPage('workspace')}
                 goApprovals={() => setPage('approvals')}
               />
             )}
             {page === 'workspace' && (
-              <Workspace
-                onExecuted={s => setToast(`Done — ${s}`)}
-                seedPrompt={seed}
-                onSeedConsumed={() => setSeed(null)}
-              />
+              <Workspace onExecuted={recordRun} seedPrompt={seed} onSeedConsumed={() => setSeed(null)} />
             )}
             {page === 'approvals' && <Approvals approvals={approvals} onDecide={decide} />}
             {page === 'knowledge' && <Knowledge onAsk={openBrief} />}
@@ -219,7 +225,37 @@ export default function App() {
       </AnimatePresence>
     </div>
     </MotionConfig>
+    </ErrorBoundary>
   )
+}
+
+/** 크래시 시 빈 화면/리로드처럼 보이는 대신 에러를 그대로 보여준다 (튕김 진단용) */
+class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null }
+  static getDerivedStateFromError(error: Error) {
+    return { error }
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="h-screen grid place-items-center bg-[var(--m3-surface)] text-[var(--m3-on-surface)] p-8">
+          <div className="max-w-lg text-center space-y-3">
+            <h1 className="text-lg font-bold">Something broke</h1>
+            <pre className="text-xs text-left whitespace-pre-wrap bg-[var(--m3-surface-container)] rounded-xl p-4 overflow-auto max-h-60">
+              {String(this.state.error?.stack || this.state.error)}
+            </pre>
+            <button
+              onClick={() => location.reload()}
+              className="px-4 h-10 rounded-lg bg-[var(--m3-primary)] text-[var(--m3-on-primary)] text-sm font-bold"
+            >
+              Reload
+            </button>
+          </div>
+        </div>
+      )
+    }
+    return this.props.children
+  }
 }
 
 /* ---------- ⌘K 커맨드 팔레트 ---------- */
