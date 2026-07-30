@@ -109,7 +109,15 @@ const SCENARIOS: { key: string; label: string; steps: DemoStep[] }[] = [
   },
 ]
 
-type Session = { id: number; title: string; titled: boolean; thread: ThreadMessage[]; createdByYou?: boolean }
+type Session = {
+  id: number
+  title: string
+  titled: boolean
+  thread: ThreadMessage[]
+  createdByYou?: boolean
+  /** 스레드 상단에 뜨는 세션 성격 라벨 */
+  tagline?: string
+}
 
 /* ---------- Inbox 뷰 시스템 ---------- */
 
@@ -253,6 +261,54 @@ const VIEW_ITEMS: Record<'cs' | 'am' | 'pq' | 'fr', InboxItem[]> = {
 
 const initialSessions: Session[] = [
   { id: 1, title: 'Ops daily', titled: true, thread: initialThread },
+  {
+    id: 3,
+    title: 'Vendor review · shared',
+    titled: true,
+    tagline: 'Shared session — one agent, whole team, governed by workspace access controls',
+    thread: [
+      {
+        id: 1,
+        from: 'peer',
+        author: 'Sihoon',
+        avatar: 'img/avatar-sihoon.jpg',
+        text: '@Onflow what did Hanbit quote for August volumes?',
+        time: '10:14 AM',
+      },
+      {
+        id: 2,
+        from: 'agent',
+        text: 'Hanbit quoted +3.2% vs June, volume unchanged. Full sheet is restricted to Purchasing — members without access see this summary only.',
+        time: '10:14 AM',
+        sources: [
+          { key: 'gmail', label: 'Hanbit reply' },
+          { key: 'drive', label: 'Price sheet v3' },
+        ],
+      },
+      {
+        id: 3,
+        from: 'peer',
+        author: 'Jihoon',
+        avatar: 'img/avatar-jihoon.jpg',
+        text: 'I only see the summary — can I get the full sheet for the meeting?',
+        time: '10:16 AM',
+      },
+      {
+        id: 4,
+        from: 'agent',
+        text: 'Jihoon’s role doesn’t include vendor pricing. Sent an access request to Junwon — nothing is shared until it’s approved.',
+        time: '10:16 AM',
+      },
+      { id: 5, from: 'me', text: 'Approved — share it in this session.', time: '10:18 AM' },
+      {
+        id: 6,
+        from: 'agent',
+        text: 'Shared. Jihoon now sees the full sheet here — the grant is scoped to this session and logged.',
+        time: '10:18 AM',
+        sources: [{ key: 'drive', label: 'Price sheet v3 · access log' }],
+      },
+    ],
+  },
   {
     id: 2,
     title: 'Aqara Life rollout',
@@ -764,10 +820,13 @@ export default function Workspace({
             <EmptyState onPick={runSeed} />
           ) : (
             <>
-              <div className="text-center">
-                <span className="text-[11px] text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-lg px-2.5 py-1">
+              <div className="text-center space-y-1.5">
+                <span className="inline-block text-[11px] text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-lg px-2.5 py-1">
                   Thursday, July 31
                 </span>
+                {activeSession?.tagline && (
+                  <div className="text-[11px] text-[var(--m3-on-surface-variant)]">{activeSession.tagline}</div>
+                )}
               </div>
               {thread.map(m => (
                 <Bubble key={m.id} m={m} onUndo={m.tool ? () => undoRun(m.id) : undefined} />
@@ -1557,12 +1616,18 @@ function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
       transition={spatialExpressive}
       className={`flex items-end gap-2 ${mine ? 'justify-end' : 'justify-start'}`}
     >
-      {!mine && (
+      {m.from === 'agent' && (
         <span className="w-6 h-6 rounded-full bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)] grid place-items-center shrink-0 mb-4">
           <SparkIcon width={13} />
         </span>
       )}
+      {m.from === 'peer' && (
+        <img src={asset(m.avatar ?? '')} alt={m.author} className="w-6 h-6 rounded-full object-cover shrink-0 mb-4" />
+      )}
       <div className="max-w-[75%]">
+        {m.from === 'peer' && (
+          <div className="text-[11px] font-semibold text-[var(--m3-on-surface-variant)] mb-0.5 ml-1">{m.author}</div>
+        )}
         {tool && m.toolNote && (
           <div className="flex items-center gap-1.5 mb-1 text-[11px] text-[var(--m3-on-surface-variant)]">
             <span className="w-4 h-4 grid place-items-center" style={{ color: tool.color }}>

@@ -9,7 +9,10 @@ export type SourceKey = ToolKey | 'erp' | 'drive' | 'wiki'
 
 export type ThreadMessage = {
   id: number
-  from: 'me' | 'agent'
+  from: 'me' | 'agent' | 'peer'
+  /** from='peer'일 때 표시되는 팀원 */
+  author?: string
+  avatar?: string
   text: string
   time: string
   /** Tool badge for executed-result messages */
