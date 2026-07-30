@@ -1,5 +1,8 @@
 import type { ToolKey } from './intent'
 
+/** Pages 배포의 base 경로를 붙인 정적 에셋 URL (public/ 밑) */
+export const asset = (p: string) => import.meta.env.BASE_URL + p
+
 /* ---------- Workspace thread ---------- */
 
 export type SourceKey = ToolKey | 'erp' | 'drive' | 'wiki'
@@ -14,12 +17,31 @@ export type ThreadMessage = {
   toolNote?: string
   /** Evidence chips — company-data citations */
   sources?: { key: SourceKey; label: string }[]
+  /** Attached photo (public/img) */
+  image?: string
 }
 
 export const initialThread: ThreadMessage[] = [
-  { id: 1, from: 'me', text: 'Did tomorrow’s design review get moved to 3 PM?', time: '4:52 PM' },
+  {
+    id: 1,
+    from: 'me',
+    text: 'Inbound from this morning — racks are near capacity again. Can you log it?',
+    time: '11:02 AM',
+    image: 'img/warehouse.jpg',
+  },
   {
     id: 2,
+    from: 'agent',
+    text: 'Logged to the ops journal. ERP shows 92% rack utilization at the Icheon site — 3PL overflow kicks in at 95%, so I’d flag this in tomorrow’s logistics sync.',
+    time: '11:03 AM',
+    sources: [
+      { key: 'erp', label: 'Sabangnet · rack utilization' },
+      { key: 'notion', label: 'Ops journal · Jul 31' },
+    ],
+  },
+  { id: 3, from: 'me', text: 'Did tomorrow’s design review get moved to 3 PM?', time: '4:52 PM' },
+  {
+    id: 4,
     from: 'agent',
     text: 'Yes — per the calendar, tomorrow (Fri) design review moved from 2 PM → 3 PM. 2 of the 6 attendees haven’t accepted the updated invite yet.',
     time: '4:52 PM',
@@ -27,9 +49,9 @@ export const initialThread: ThreadMessage[] = [
 ]
 
 export const teammates = [
-  { name: 'Sihoon', color: '#6750A4' },
-  { name: 'Jinho', color: '#00696D' },
-  { name: 'Jihoon', color: '#8B5000' },
+  { name: 'Sihoon', color: '#6750A4', avatar: 'img/avatar-sihoon.jpg' },
+  { name: 'Jinho', color: '#00696D', avatar: 'img/avatar-jinho.jpg' },
+  { name: 'Jihoon', color: '#8B5000', avatar: 'img/avatar-jihoon.jpg' },
 ]
 
 /** Tomorrow 10:00–18:00 team calendars (hours as decimals; the answer card computes the intersection) */
@@ -77,12 +99,12 @@ export const homeStats = [
 
 /* ---------- Recent tasks (Aside-style activity cards) ---------- */
 
-export type RecentTask = { title: string; tool: ToolKey; when: string }
+export type RecentTask = { title: string; tool: ToolKey; when: string; img?: string }
 
 export const seedRecent: RecentTask[] = [
-  { title: 'Sent Aqara Life quote', tool: 'gmail', when: 'yesterday' },
+  { title: 'Sent Aqara Life quote', tool: 'gmail', when: 'yesterday', img: 'img/smarthome.jpg' },
   { title: 'Filed weekly minutes to Notion', tool: 'notion', when: 'yesterday' },
-  { title: 'Order-deadline reminder', tool: 'slack', when: 'Monday' },
+  { title: 'Order-deadline reminder', tool: 'slack', when: 'Monday', img: 'img/warehouse.jpg' },
 ]
 
 /* ---------- Approval queue ---------- */

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { IconArrowRegular } from '@seed-design/icon'
-import { briefing, homeStats, type RecentTask } from '../data'
+import { briefing, homeStats, asset, type RecentTask } from '../data'
 import { Card, SourceBadge, sourceName } from '../components/ui'
 import { spatialExpressive } from '../motion'
 
@@ -75,7 +75,7 @@ export default function Home({
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spatialExpressive, delay: 0.18 + i * 0.05 }}
             >
-              <Card className="p-4 h-full">
+              <Card className="p-4 h-full flex flex-col">
                 <div className="text-xs text-[var(--m3-on-surface-variant)] mb-1.5">
                   {t.when === 'just now' ? 'Just now' : t.when}
                 </div>
@@ -87,6 +87,13 @@ export default function Home({
                     Done
                   </span>
                 </div>
+                {t.img && (
+                  <img
+                    src={asset(t.img)}
+                    alt=""
+                    className="mt-3 rounded-lg border border-[var(--m3-outline-variant)] h-24 w-full object-cover"
+                  />
+                )}
               </Card>
             </motion.div>
           ))}

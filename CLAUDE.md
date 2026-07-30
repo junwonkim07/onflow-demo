@@ -104,6 +104,7 @@ Workspace 컴포저 위에 뜨는 카드는 세 종류이고, **우선순위가 
 - **새 페이지**: `pages/`에 추가 → `App.tsx`의 `Page` 타입 + `NAV` + `TITLES` + 렌더 분기. 페이지 헤더는 `PageHeader` 사용.
 - **고스트 자동완성 문장 추가**: `Workspace.tsx`의 `SUGGESTIONS` 배열. 입력 접두어가 일치하면 나머지가 섀도로 뜨고 **Tab**으로 완성된다. 여기 넣는 문장도 감지 정규식에 걸리는 문장이어야 한다.
 - **Recent tasks(홈)**: 시드는 `data.ts`의 `seedRecent`, 실행/승인 시 `App.tsx`의 `recordRun`이 자동으로 쌓는다.
+- **실사진 에셋**: `public/img/` (아바타 = randomuser.me, 현장 사진 = Unsplash — 데모 용도). 참조는 반드시 `asset('img/…')` 헬퍼(data.ts)로 — base 경로 때문에 `/img/...` 절대경로를 쓰면 Pages에서 404 난다. 스레드 첨부는 `ThreadMessage.image`, Recent 썸네일은 `RecentTask.img`. 목업이 "AI 티" 나지 않게 실사진을 유지할 것 — 지우지 말 것.
 
 ---
 

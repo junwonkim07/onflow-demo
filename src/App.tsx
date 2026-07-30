@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion'
-import { Avatar } from 'seed-design/ui/avatar'
 import {
   IconHomeRegular,
   IconChattingRegular,
@@ -15,7 +14,7 @@ import {
 } from '@seed-design/icon'
 import { applyTheme } from './theme'
 import { Component, type ReactNode } from 'react'
-import { initialApprovals, briefing, docs, seedRecent, type Approval, type RecentTask } from './data'
+import { initialApprovals, briefing, docs, seedRecent, asset, type Approval, type RecentTask } from './data'
 import type { ToolKey } from './intent'
 import Home from './pages/Home'
 import Workspace from './pages/Workspace'
@@ -44,7 +43,7 @@ const TITLES: Record<Page, string> = {
 
 export default function App() {
   const [page, setPage] = useState<Page>('home')
-  const [dark, setDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const [dark, setDark] = useState(false) // 기본 라이트 모드
   const [approvals, setApprovals] = useState<Approval[]>(initialApprovals)
   const [toast, setToast] = useState<string | null>(null)
   const [seed, setSeed] = useState<string | null>(null)
@@ -164,7 +163,7 @@ export default function App() {
           >
             <IconNotificationRegular width={19} height={19} />
           </button>
-          <Avatar size="36" fallback="J" />
+          <img src={asset('img/avatar-junwon.jpg')} alt="Junwon Kim" className="w-9 h-9 rounded-full object-cover" />
         </header>
 
         <main className="flex-1 min-h-0 overflow-y-auto px-10 pb-8 flex">

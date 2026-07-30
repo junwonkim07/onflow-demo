@@ -37,7 +37,7 @@ import {
   type ConflictAnswer,
   type ToolKey,
 } from '../intent'
-import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, type ThreadMessage, type SourceKey } from '../data'
+import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, asset, type ThreadMessage, type SourceKey } from '../data'
 import { SourceBadge } from '../components/ui'
 import { spatialExpressive, effect } from '../motion'
 
@@ -119,15 +119,22 @@ const initialSessions: Session[] = [
     title: 'Aqara Life rollout',
     titled: true,
     thread: [
-      { id: 1, from: 'me', text: 'How far did we get on Aqara contract terms?', time: 'yesterday' },
+      {
+        id: 1,
+        from: 'me',
+        text: 'Site photo from yesterday’s pilot install — lock placement look right to you?',
+        time: 'yesterday',
+        image: 'img/smarthome.jpg',
+      },
       {
         id: 2,
         from: 'agent',
-        text: 'We sent the quote — annual maintenance + monthly operations subscription. Only the contract meeting is left. Owner: Sanghyun Lee.',
+        text: 'Matches the spec in their install guide (handle-side, 1.2m). I’d attach this to the PoC report.\n\nOn commercials: quote sent — annual maintenance + monthly operations subscription. Only the contract meeting is left. Owner: Sanghyun Lee.',
         time: 'yesterday',
         sources: [
           { key: 'gmail', label: 'Quote · Jul 22' },
           { key: 'calendar', label: 'Contract meeting' },
+          { key: 'notion', label: 'Install guide v2' },
         ],
       },
     ],
@@ -481,14 +488,13 @@ export default function Workspace({
           <div className="flex-1" />
           <div className="flex -space-x-1 mr-1.5">
             {teammates.map(t => (
-              <span
+              <img
                 key={t.name}
+                src={asset(t.avatar)}
+                alt={`${t.name} — viewing`}
                 title={`${t.name} — viewing`}
-                className="w-6 h-6 rounded-full grid place-items-center text-[10px] font-bold text-white ring-2 ring-[var(--m3-surface-container-lowest)]"
-                style={{ backgroundColor: t.color }}
-              >
-                {t.name[0]}
-              </span>
+                className="w-6 h-6 rounded-full object-cover ring-2 ring-[var(--m3-surface-container-lowest)]"
+              />
             ))}
           </div>
           {[IconReviewStarRegular, IconMoreHorizRegular, IconMoonRegular].map((I, i) => (
@@ -1098,6 +1104,13 @@ function Bubble({ m }: { m: ThreadMessage }) {
             </span>
             {m.toolNote}
           </div>
+        )}
+        {m.image && (
+          <img
+            src={asset(m.image)}
+            alt="attachment"
+            className={`rounded-xl border border-[var(--m3-outline-variant)] mb-1.5 max-w-[300px] max-h-52 object-cover ${mine ? 'ml-auto' : ''}`}
+          />
         )}
         <div
           className={`rounded-xl px-3.5 py-2 leading-relaxed whitespace-pre-line ${
