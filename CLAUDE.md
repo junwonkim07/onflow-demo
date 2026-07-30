@@ -84,7 +84,7 @@ Workspace 컴포저 위에 뜨는 카드는 세 종류이고, **우선순위가 
 | `src/index.css` | agent-dot, progress-line, slot-band, reduced-motion | 상태 표현 |
 | `src/App.tsx` | 셸(레일/톱바), 페이지 라우팅, ⌘K 팔레트, 토스트, 승인 상태 | 내비 항목, 팔레트 항목 |
 | `src/pages/Home.tsx` | 히어로 + 스탯 + 브리핑(클릭 시 워크스페이스 시드) | 브리핑은 data.ts에서 |
-| `src/pages/Workspace.tsx` | **인터콤 4컬럼 인박스 포맷**: Inbox 내비(정적 드레싱+Demo 링크) / 세션 리스트 / 대화+Reply 컴포저(카드 3종·고스트 Tab) / Details·Copilot 패널(Add to composer=마지막 답변을 컴포저로, Ask a question=runSeed) | 시나리오(SCENARIOS), 카드 |
+| `src/pages/Workspace.tsx` | **인터콤 4컬럼 인박스 포맷 + 뷰 시스템**(`view` 상태): Your inbox/All/Created(세션 모드, Copilot 패널 포함) · Mentions/Views 4종(아이템 리스트+상세, "Draft reply in a session"=새 세션에 프롬프트 시드) · Dashboard/Agent 전용 패널 · Unassigned 엠티. 풀블리드(App main 패딩이 workspace에서만 0) | 시나리오(SCENARIOS), MENTIONS/VIEW_ITEMS, 카드 |
 | `src/pages/Approvals.tsx` | 메일/슬랙 **실물 모양** 초안 + 승인/반려 | 초안은 data.ts에서 |
 | `src/pages/Knowledge.tsx` | Company Memory 그래프(포스 레이아웃) + 인스펙터 + 문서 목록 | 엔티티(ENTITIES)/연결(EDGES) |
 | `src/pages/Integrations.tsx` | 연동 그리드 | 목록은 data.ts에서 |
