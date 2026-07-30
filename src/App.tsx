@@ -138,9 +138,6 @@ export default function App() {
       <div className="relative flex-1 min-w-0 flex flex-col">
         <header className="h-16 shrink-0 flex items-center gap-3 px-6">
           <h1 className="font-bold text-lg tracking-tight">{TITLES[page]}</h1>
-          <span className="text-xs text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-full px-2.5 py-1">
-            Moho Inc.
-          </span>
           <div className="flex-1" />
           <button
             onClick={() => setPaletteOpen(true)}
@@ -217,7 +214,7 @@ export default function App() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--m3-inverse-surface)] text-[var(--m3-inverse-on-surface)] text-sm rounded-full px-5 py-2.5 shadow-lg"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[var(--m3-inverse-surface)] text-[var(--m3-inverse-on-surface)] text-sm rounded-xl px-5 py-2.5"
           >
             {toast}
           </motion.div>
@@ -308,7 +305,7 @@ function CommandPalette({
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 6, scale: 0.99 }}
         transition={{ type: 'spring', stiffness: 420, damping: 30 }}
-        className="w-[560px] max-w-[90vw] rounded-2xl bg-[var(--m3-surface-container-lowest)] border border-[var(--m3-outline-variant)] shadow-2xl overflow-hidden"
+        className="w-[560px] max-w-[90vw] rounded-xl bg-[var(--m3-surface-container-lowest)] border border-[var(--m3-outline-variant)] overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center gap-2.5 px-4 border-b border-[var(--m3-outline-variant)]">

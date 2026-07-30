@@ -68,14 +68,16 @@ export default function Approvals({
                     {tool.logo}
                   </span>
                   <span className="text-sm flex-1 truncate">{a.title}</span>
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full ${
-                      ok
-                        ? 'bg-[var(--m3-secondary-container)] text-[var(--m3-on-secondary-container)]'
-                        : 'bg-[var(--m3-error-container)] text-[var(--m3-on-error-container)]'
-                    }`}
-                  >
-                    {ok ? 'Approved · sent' : 'Rejected'}
+                  <span className="flex items-center gap-1 text-[11px] text-[var(--m3-on-surface-variant)]">
+                    {ok ? (
+                      <>
+                        <IconCheckRegular width={13} height={13} className="text-[var(--m3-primary)]" /> Sent
+                      </>
+                    ) : (
+                      <>
+                        <IconCloseRegular width={13} height={13} className="text-[var(--m3-error)]" /> Rejected
+                      </>
+                    )}
                   </span>
                 </Card>
               )

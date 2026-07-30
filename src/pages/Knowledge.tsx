@@ -1,5 +1,18 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { select } from 'd3-selection'
+import { zoom, zoomIdentity, type ZoomBehavior } from 'd3-zoom'
+import { drag } from 'd3-drag'
+import {
+  forceSimulation,
+  forceManyBody,
+  forceLink,
+  forceCenter,
+  forceCollide,
+  type Simulation,
+  type SimulationNodeDatum,
+  type SimulationLinkDatum,
+} from 'd3-force'
 import { ActionButton } from 'seed-design/ui/action-button'
 import { IconSearchRegular, IconArrowRegular } from '@seed-design/icon'
 import { docs, type Doc } from '../data'
@@ -8,12 +21,14 @@ import { spatialExpressive } from '../motion'
 
 /* ---------- 그래프 데이터: 메모리 노드(문서) + 엔티티 노드 ---------- */
 
-type GNode = {
+type GNode = SimulationNodeDatum & {
   id: string
   kind: 'memory' | 'entity'
   label: string
   doc?: Doc
 }
+
+type GLink = SimulationLinkDatum<GNode>
 
 const ENTITIES = [
   { id: 'e-aqara', label: 'Aqara Life' },
@@ -46,203 +61,219 @@ const SOURCE_COLOR: Record<Doc['source'], string> = {
   drive: '#3b7a57',
 }
 
-/** 결정적 포스 레이아웃 — 원형 초기 배치 후 스프링·반발 이터레이션 */
-function computeLayout(nodes: GNode[], edges: [string, string][], W: number, H: number) {
-  const pos = new Map<string, { x: number; y: number }>()
-  nodes.forEach((n, i) => {
-    const a = (i / nodes.length) * Math.PI * 2
-    const r = n.kind === 'entity' ? 90 : 170
-    pos.set(n.id, { x: W / 2 + Math.cos(a) * r, y: H / 2 + Math.sin(a) * r })
-  })
-  for (let it = 0; it < 280; it++) {
-    // 반발
-    for (const a of nodes)
-      for (const b of nodes) {
-        if (a.id >= b.id) continue
-        const pa = pos.get(a.id)!, pb = pos.get(b.id)!
-        let dx = pa.x - pb.x, dy = pa.y - pb.y
-        const d2 = Math.max(dx * dx + dy * dy, 40)
-        const f = 2600 / d2
-        const d = Math.sqrt(d2)
-        dx /= d; dy /= d
-        pa.x += dx * f; pa.y += dy * f
-        pb.x -= dx * f; pb.y -= dy * f
-      }
-    // 스프링
-    for (const [s, t] of edges) {
-      const ps = pos.get(s)!, pt = pos.get(t)!
-      const dx = pt.x - ps.x, dy = pt.y - ps.y
-      const d = Math.max(Math.sqrt(dx * dx + dy * dy), 1)
-      const f = (d - 105) * 0.028
-      ps.x += (dx / d) * f; ps.y += (dy / d) * f
-      pt.x -= (dx / d) * f; pt.y -= (dy / d) * f
-    }
-    // 중심 인력 + 경계
-    for (const n of nodes) {
-      const p = pos.get(n.id)!
-      p.x += (W / 2 - p.x) * 0.012
-      p.y += (H / 2 - p.y) * 0.012
-      p.x = Math.min(W - 60, Math.max(60, p.x))
-      p.y = Math.min(H - 42, Math.max(34, p.y))
-    }
-  }
-  return pos
-}
+const W = 860
+const H = 460
 
 export default function Knowledge({ onAsk }: { onAsk: (prompt: string) => void }) {
   const [q, setQ] = useState('')
   const [showEntities, setShowEntities] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>('d-1')
-  const [hoverId, setHoverId] = useState<string | null>(null)
-  const dragRef = useRef<{ id: string; sx: number; sy: number } | null>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
+  const simRef = useRef<Simulation<GNode, GLink> | null>(null)
+  const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null)
+  const selectedRef = useRef(selectedId)
+  selectedRef.current = selectedId
 
-  const W = 820, H = 440
-  const nodes: GNode[] = useMemo(
+  const neighborMap = useMemo(() => {
+    const m = new Map<string, Set<string>>()
+    for (const [s, t] of EDGES) {
+      if (!m.has(s)) m.set(s, new Set())
+      if (!m.has(t)) m.set(t, new Set())
+      m.get(s)!.add(t)
+      m.get(t)!.add(s)
+    }
+    return m
+  }, [])
+
+  /* d3-force + d3-zoom + d3-drag — 실시간 시뮬레이션 그래프 */
+  useEffect(() => {
+    const svgEl = svgRef.current
+    if (!svgEl) return
+    const svg = select(svgEl)
+    svg.selectAll('*').remove()
+
+    const nodes: GNode[] = [
+      ...docs.map(d => ({ id: `d-${d.id}`, kind: 'memory' as const, label: d.title, doc: d })),
+      ...(showEntities ? ENTITIES.map(e => ({ id: e.id, kind: 'entity' as const, label: e.label })) : []),
+    ]
+    const nodeIds = new Set(nodes.map(n => n.id))
+    const links: GLink[] = EDGES.filter(([s, t]) => nodeIds.has(s) && nodeIds.has(t)).map(([s, t]) => ({ source: s, target: t }))
+
+    const g = svg.append('g')
+
+    const zb = zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.35, 3])
+      .on('zoom', e => g.attr('transform', e.transform.toString()))
+    svg.call(zb).on('dblclick.zoom', null)
+    zoomRef.current = zb
+
+    const sim = forceSimulation<GNode>(nodes)
+      .force('charge', forceManyBody().strength(-260))
+      .force('link', forceLink<GNode, GLink>(links).id(d => d.id).distance(l => ((l.source as GNode).kind === 'entity' || (l.target as GNode).kind === 'entity' ? 85 : 120)))
+      .force('center', forceCenter(W / 2, H / 2))
+      .force('collide', forceCollide<GNode>(d => (d.kind === 'memory' ? 34 : 26)))
+    simRef.current = sim
+
+    const link = g
+      .selectAll('line')
+      .data(links)
+      .join('line')
+      .attr('stroke', 'var(--m3-outline-variant)')
+      .attr('stroke-width', 1.2)
+
+    const node = g
+      .selectAll<SVGGElement, GNode>('g.node')
+      .data(nodes)
+      .join('g')
+      .attr('class', 'node')
+      .style('cursor', 'pointer')
+      .call(
+        drag<SVGGElement, GNode>()
+          .on('start', (e, d) => {
+            if (!e.active) sim.alphaTarget(0.25).restart()
+            d.fx = d.x
+            d.fy = d.y
+          })
+          .on('drag', (e, d) => {
+            d.fx = e.x
+            d.fy = e.y
+          })
+          .on('end', (e, d) => {
+            if (!e.active) sim.alphaTarget(0)
+            d.fx = null
+            d.fy = null
+          }),
+      )
+      .on('click', (_, d) => setSelectedId(d.id))
+      .on('mouseenter', (_, d) => highlight(d.id))
+      .on('mouseleave', () => highlight(selectedRef.current))
+
+    node
+      .append('circle')
+      .attr('class', 'ring')
+      .attr('r', d => (d.kind === 'memory' ? 15 : 12))
+      .attr('fill', 'none')
+      .attr('stroke', 'var(--m3-primary)')
+      .attr('stroke-width', 2)
+      .attr('stroke-opacity', 0)
+
+    node
+      .filter(d => d.kind === 'memory')
+      .append('circle')
+      .attr('r', 10)
+      .attr('fill', 'var(--m3-surface-container-high)')
+      .attr('stroke', d => SOURCE_COLOR[d.doc!.source])
+      .attr('stroke-width', 2.2)
+
+    node
+      .filter(d => d.kind === 'entity')
+      .append('circle')
+      .attr('r', 7)
+      .attr('fill', 'var(--m3-tertiary)')
+
+    node
+      .append('text')
+      .attr('y', d => (d.kind === 'memory' ? 24 : 20))
+      .attr('text-anchor', 'middle')
+      .attr('font-size', 10.5)
+      .attr('fill', 'var(--m3-on-surface-variant)')
+      .text(d => (d.label.length > 15 ? d.label.slice(0, 14) + '…' : d.label))
+
+    const highlight = (focus: string | null) => {
+      const set = focus ? new Set([focus, ...(neighborMap.get(focus) ?? [])]) : null
+      node.attr('opacity', d => (set && !set.has(d.id) ? 0.25 : 1))
+      link
+        .attr('stroke', l => {
+          const s = (l.source as GNode).id
+          const t = (l.target as GNode).id
+          return set && set.has(s) && set.has(t) ? 'var(--m3-primary)' : 'var(--m3-outline-variant)'
+        })
+        .attr('stroke-opacity', l => {
+          const s = (l.source as GNode).id
+          const t = (l.target as GNode).id
+          return set ? (set.has(s) && set.has(t) ? 0.7 : 0.25) : 0.6
+        })
+      node.select<SVGCircleElement>('circle.ring').attr('stroke-opacity', d => (d.id === selectedRef.current ? 0.6 : 0))
+    }
+
+    sim.on('tick', () => {
+      link
+        .attr('x1', l => (l.source as GNode).x!)
+        .attr('y1', l => (l.source as GNode).y!)
+        .attr('x2', l => (l.target as GNode).x!)
+        .attr('y2', l => (l.target as GNode).y!)
+      node.attr('transform', d => `translate(${d.x},${d.y})`)
+    })
+
+    highlight(selectedRef.current)
+    ;(svgEl as unknown as { __highlight?: (f: string | null) => void }).__highlight = highlight
+
+    return () => {
+      sim.stop()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showEntities])
+
+  // 선택 변경 시 하이라이트 갱신 (재시뮬레이션 없이)
+  useEffect(() => {
+    const fn = (svgRef.current as unknown as { __highlight?: (f: string | null) => void } | null)?.__highlight
+    fn?.(selectedId)
+  }, [selectedId])
+
+  const resetZoom = () => {
+    if (svgRef.current && zoomRef.current) select(svgRef.current).call(zoomRef.current.transform, zoomIdentity)
+  }
+
+  const nodes = useMemo(
     () => [
       ...docs.map(d => ({ id: `d-${d.id}`, kind: 'memory' as const, label: d.title, doc: d })),
       ...ENTITIES.map(e => ({ id: e.id, kind: 'entity' as const, label: e.label })),
     ],
     [],
   )
-  const baseLayout = useMemo(() => computeLayout(nodes, EDGES, W, H), [nodes])
-  const [positions, setPositions] = useState(() => new Map(baseLayout))
-
-  const visibleNodes = nodes.filter(n => showEntities || n.kind === 'memory')
-  const visibleEdges = EDGES.filter(([s, t]) =>
-    visibleNodes.some(n => n.id === s) && visibleNodes.some(n => n.id === t),
-  )
-
-  const neighbors = (id: string) =>
-    new Set(EDGES.flatMap(([s, t]) => (s === id ? [t] : t === id ? [s] : [])))
-
-  const focusId = hoverId ?? selectedId
-  const focusSet = focusId ? new Set([focusId, ...neighbors(focusId)]) : null
-
   const selected = nodes.find(n => n.id === selectedId) ?? null
   const selectedEntityDocs =
     selected?.kind === 'entity'
-      ? nodes.filter(n => n.kind === 'memory' && neighbors(selected.id).has(n.id))
+      ? nodes.filter(n => n.kind === 'memory' && neighborMap.get(selected.id)?.has(n.id))
       : []
 
   const filteredDocs = docs.filter(
     d => !q.trim() || (d.title + d.snippet + d.owner + sourceName(d.source)).toLowerCase().includes(q.toLowerCase()),
   )
 
-  const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (!dragRef.current) return
-    const svg = e.currentTarget
-    const rect = svg.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * W
-    const y = ((e.clientY - rect.top) / rect.height) * H
-    setPositions(p => {
-      const next = new Map(p)
-      next.set(dragRef.current!.id, { x: Math.min(W - 40, Math.max(40, x)), y: Math.min(H - 30, Math.max(24, y)) })
-      return next
-    })
-  }
-
   return (
     <div className="max-w-6xl w-full mx-auto">
       <PageHeader
         title="Company Memory"
-        desc="Scattered chats, docs and data compile into company memory — and compound through connections"
         right={
-          <div className="flex items-center gap-2 text-xs text-[var(--m3-on-surface-variant)]">
-            <span className="bg-[var(--m3-surface-container)] rounded-lg px-3 py-1.5">
-              204 docs · 38 entities · 122 links · compiled 5 min ago
-            </span>
-          </div>
+          <span className="text-xs text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-lg px-3 py-1.5">
+            204 docs · 38 entities · 122 links · compiled 5 min ago
+          </span>
         }
       />
 
       <div className="flex gap-5 mb-6">
-        {/* 그래프 캔버스 */}
-        <Card className="flex-1 min-w-0 overflow-hidden">
-          <div className="flex items-center gap-3 px-5 pt-4 pb-1">
-            <span className="agent-dot w-2.5 h-2.5" aria-hidden />
-            <span className="text-sm font-bold">Memory graph</span>
-            <span className="text-[11px] text-[var(--m3-on-surface-variant)]">
-              Drag nodes to arrange · click one for its evidence
-            </span>
+        {/* 그래프 캔버스 — 휠 줌 · 배경 드래그 팬 · 노드 드래그 */}
+        <Card className="flex-1 min-w-0 overflow-hidden relative">
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+            <button
+              onClick={resetZoom}
+              className="text-[11px] px-2.5 py-1 rounded-lg bg-[var(--m3-surface-container)] text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container-high)] transition-colors"
+            >
+              Reset view
+            </button>
             <button
               onClick={() => setShowEntities(v => !v)}
-              className={`ml-auto text-[11px] px-2.5 py-1 rounded-lg transition-colors ${
+              className={`text-[11px] px-2.5 py-1 rounded-lg transition-colors ${
                 showEntities
                   ? 'bg-[var(--m3-secondary-container)] text-[var(--m3-on-secondary-container)]'
                   : 'bg-[var(--m3-surface-container)] text-[var(--m3-on-surface-variant)]'
               }`}
             >
-              Entities {showEntities ? 'shown' : 'hidden'}
+              Entities
             </button>
           </div>
-          <svg
-            viewBox={`0 0 ${W} ${H}`}
-            className="w-full select-none touch-none"
-            onPointerMove={onPointerMove}
-            onPointerUp={() => (dragRef.current = null)}
-            onPointerLeave={() => {
-              dragRef.current = null
-              setHoverId(null)
-            }}
-          >
-            {visibleEdges.map(([s, t]) => {
-              const ps = positions.get(s)!, pt = positions.get(t)!
-              const lit = focusSet ? focusSet.has(s) && focusSet.has(t) : true
-              return (
-                <line
-                  key={s + t}
-                  x1={ps.x} y1={ps.y} x2={pt.x} y2={pt.y}
-                  stroke={lit ? 'var(--m3-primary)' : 'var(--m3-outline-variant)'}
-                  strokeOpacity={lit ? 0.55 : 0.35}
-                  strokeWidth={lit ? 1.6 : 1}
-                />
-              )
-            })}
-            {visibleNodes.map(n => {
-              const p = positions.get(n.id)!
-              const dim = focusSet ? !focusSet.has(n.id) : false
-              const isSel = n.id === selectedId
-              return (
-                <g
-                  key={n.id}
-                  transform={`translate(${p.x},${p.y})`}
-                  opacity={dim ? 0.28 : 1}
-                  className="cursor-pointer"
-                  onPointerDown={e => {
-                    dragRef.current = { id: n.id, sx: e.clientX, sy: e.clientY }
-                  }}
-                  onPointerUp={e => {
-                    const d = dragRef.current
-                    dragRef.current = null
-                    if (d && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 5) setSelectedId(n.id)
-                  }}
-                  onMouseEnter={() => setHoverId(n.id)}
-                  onMouseLeave={() => setHoverId(null)}
-                >
-                  {n.kind === 'memory' ? (
-                    <>
-                      {isSel && <circle r={15} fill="none" stroke="var(--m3-primary)" strokeOpacity={0.5} strokeWidth={2} />}
-                      <circle r={10} fill="var(--m3-surface-container-high)" stroke={SOURCE_COLOR[n.doc!.source]} strokeWidth={2.2} />
-                    </>
-                  ) : (
-                    <>
-                      {isSel && <circle r={12} fill="none" stroke="var(--m3-tertiary)" strokeOpacity={0.5} strokeWidth={2} />}
-                      <circle r={7} fill="var(--m3-tertiary)" />
-                    </>
-                  )}
-                  <text
-                    y={n.kind === 'memory' ? 24 : 20}
-                    textAnchor="middle"
-                    fontSize={10.5}
-                    fill="var(--m3-on-surface-variant)"
-                    fontWeight={isSel ? 700 : 400}
-                  >
-                    {n.label.length > 14 ? n.label.slice(0, 13) + '…' : n.label}
-                  </text>
-                </g>
-              )
-            })}
-          </svg>
+          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} className="w-full select-none touch-none" />
         </Card>
 
         {/* 인스펙터 */}
@@ -283,7 +314,7 @@ export default function Knowledge({ onAsk }: { onAsk: (prompt: string) => void }
                     <button
                       key={n.id}
                       onClick={() => setSelectedId(n.id)}
-                      className="w-full text-left text-[13px] px-3 py-2 rounded-xl bg-[var(--m3-surface-container)] hover:bg-[var(--m3-surface-container-high)] transition-colors truncate"
+                      className="w-full text-left text-[13px] px-3 py-2 rounded-lg bg-[var(--m3-surface-container)] hover:bg-[var(--m3-surface-container-high)] transition-colors truncate"
                     >
                       {n.label}
                     </button>
@@ -316,15 +347,15 @@ export default function Knowledge({ onAsk }: { onAsk: (prompt: string) => void }
           value={q}
           onChange={e => setQ(e.target.value)}
           placeholder="Search memory (e.g. price sheet, returns)"
-          className="w-full h-12 pl-11 pr-4 rounded-xl bg-[var(--m3-surface-container)] outline-none text-[15px] focus:ring-2 focus:ring-[var(--m3-primary)]"
+          className="w-full h-11 pl-11 pr-4 rounded-lg bg-[var(--m3-surface-container)] outline-none text-[14px] focus:ring-2 focus:ring-[var(--m3-primary)]"
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4 pb-4">
+      <div className="grid grid-cols-3 gap-4 pb-6">
         {filteredDocs.map((d, i) => (
           <motion.div key={d.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spatialExpressive, delay: i * 0.03 }}>
             <button className="w-full h-full text-left" onClick={() => setSelectedId(`d-${d.id}`)}>
-              <Card className={`p-4 h-full transition-shadow ${selectedId === `d-${d.id}` ? 'ring-2 ring-[var(--m3-primary)]' : 'hover:shadow-[0_6px_20px_rgba(0,0,0,.10)]'}`}>
+              <Card className={`p-4 h-full transition-shadow ${selectedId === `d-${d.id}` ? 'ring-1 ring-[var(--m3-primary)]' : 'hover:bg-[var(--m3-surface-container-low)]'}`}>
                 <div className="flex items-center gap-2.5 mb-2.5">
                   <SourceBadge source={d.source} size={28} />
                   <span className="text-[11px] text-[var(--m3-on-surface-variant)]">
@@ -338,10 +369,6 @@ export default function Knowledge({ onAsk }: { onAsk: (prompt: string) => void }
           </motion.div>
         ))}
       </div>
-
-      <p className="text-[11px] text-[var(--m3-on-surface-variant)] text-center pb-4">
-        The graph shows only memory you’re allowed to see — an edge is drawn only when both ends are visible to you.
-      </p>
     </div>
   )
 }

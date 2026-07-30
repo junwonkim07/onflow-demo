@@ -310,7 +310,16 @@ export default function Workspace({
   const [itemId, setItemId] = useState<string | null>(null)
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const scrollRef = useRef<HTMLDivElement>(null)
+  const composerRef = useRef<HTMLTextAreaElement>(null)
   const demoToken = useRef(0)
+
+  // 컴포저 자동 확장 — 내용 길이에 맞춰 커진다 (최대 176px)
+  useEffect(() => {
+    const el = composerRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 176) + 'px'
+  }, [input])
 
   const stateRef = useRef({ detected, forced, draft, input })
   stateRef.current = { detected, forced, draft, input }
@@ -397,7 +406,6 @@ export default function Workspace({
   const showActionCard = actionIntent !== null && (forced !== null || input.trim().length > 0)
   const thinking = input.trim().length > 0 && !showActionCard && !answer && !conflict
   const anyCard = showActionCard || !!answer || !!conflict
-  const dotClass = running || thinking ? 'agent-dot--thinking' : anyCard ? 'agent-dot--ready' : ''
 
   // 고스트 자동완성 — 입력 접두어와 일치하는 제안의 나머지를 섀도로 보여주고 Tab으로 완성
   const ghost = useMemo(() => {
@@ -451,6 +459,19 @@ export default function Workspace({
     const next = conflictToAction(c, source)
     setForced(next)
     setDraft(next.draft)
+  }
+
+  /** 실행 취소 — 결과 메시지와 그 직전의 내 요청을 함께 제거 */
+  const undoRun = (agentMsgId: number) => {
+    setSessions(ss =>
+      ss.map(s => {
+        if (s.id !== activeId) return s
+        const idx = s.thread.findIndex(m => m.id === agentMsgId)
+        if (idx < 0) return s
+        const start = idx > 0 && s.thread[idx - 1].from === 'me' ? idx - 1 : idx
+        return { ...s, thread: [...s.thread.slice(0, start), ...s.thread.slice(idx + 1)] }
+      }),
+    )
   }
 
   const sendPlain = () => {
@@ -545,7 +566,7 @@ export default function Workspace({
 
   return (
     <div
-      className="flex-1 min-h-0 flex border-t border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-hidden text-[13px]"
+      className="flex-1 min-h-0 flex m-3 mt-0 rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-hidden text-[13px]"
       onKeyDown={e => e.key === 'Escape' && setDismissed(true)}
     >
       {/* ── Col 1: Inbox nav ─────────────────────── */}
@@ -720,7 +741,6 @@ export default function Workspace({
       ) : (
       <section className="flex-1 min-w-0 flex flex-col">
         <header className="h-12 shrink-0 flex items-center gap-1 px-4 border-b border-[var(--m3-outline-variant)]">
-          <span className={`agent-dot w-2 h-2 mr-1.5 ${dotClass}`} aria-hidden />
           <span className="font-bold text-[15px] truncate">{activeSession?.title ?? 'Session'}</span>
           <div className="flex-1" />
           <div className="flex -space-x-1 mr-1.5">
@@ -755,7 +775,7 @@ export default function Workspace({
                 </span>
               </div>
               {thread.map(m => (
-                <Bubble key={m.id} m={m} />
+                <Bubble key={m.id} m={m} onUndo={m.tool ? () => undoRun(m.id) : undefined} />
               ))}
             </>
           )}
@@ -771,7 +791,7 @@ export default function Workspace({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, transition: effect }}
                 transition={spatialExpressive}
-                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] shadow-[0_10px_30px_rgba(0,0,0,.05)]"
+                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)]"
                 aria-label="Availability answer"
               >
                 <div className="p-3.5">
@@ -828,7 +848,7 @@ export default function Workspace({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, transition: effect }}
                 transition={spatialExpressive}
-                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] shadow-[0_10px_30px_rgba(0,0,0,.05)]"
+                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)]"
                 aria-label="Source conflict"
               >
                 <div className="p-3.5">
@@ -887,10 +907,7 @@ export default function Workspace({
                 exit={{ opacity: 0, y: 8, transition: effect }}
                 transition={spatialExpressive}
                 className="rounded-xl overflow-hidden border bg-[var(--m3-surface-container-lowest)]"
-                style={{
-                  borderColor: actionIntent.tool.color,
-                  boxShadow: `0 8px 30px ${actionIntent.tool.color}1c`,
-                }}
+                style={{ borderColor: actionIntent.tool.color }}
                 aria-label="Run preview"
               >
                 <div className="flex items-center gap-2.5 px-3.5 py-2 text-white" style={{ backgroundColor: actionIntent.tool.color }}>
@@ -899,12 +916,7 @@ export default function Workspace({
                   </span>
                   <span className="font-bold">{actionIntent.title}</span>
                   <span className="text-[11px] opacity-80">{actionIntent.target}</span>
-                  <span className="ml-auto flex items-center gap-1.5 text-[10px] opacity-90">
-                    <motion.span
-                      className="w-1.5 h-1.5 rounded-full bg-white"
-                      animate={{ opacity: [1, 0.3, 1] }}
-                      transition={{ repeat: Infinity, duration: 1.6 }}
-                    />
+                  <span className="ml-auto text-[10px] opacity-90">
                     {forced ? 'Built from the confirmed basis' : 'Prepared while you typed'}
                   </span>
                 </div>
@@ -971,8 +983,9 @@ export default function Workspace({
                     else if (!answer && !conflict) sendPlain()
                   }
                 }}
-                rows={2}
-                className="w-full resize-none outline-none text-[13px] leading-6 bg-transparent max-h-32"
+                ref={composerRef}
+                rows={1}
+                className="w-full resize-none outline-none text-[13px] leading-6 bg-transparent min-h-[48px] max-h-44 overflow-y-auto"
                 aria-label="Message input"
               />
               {ghost && (
@@ -1072,7 +1085,13 @@ export default function Workspace({
                         { key: 'wiki' as SourceKey, label: 'Internal SOP' },
                       ]).map(s => (
                         <div key={s.label} className="flex items-center gap-2 text-[12.5px]">
-                          {s.key === 'wiki' ? <span className="agent-dot w-3 h-3 mx-1" /> : <SourceBadge source={s.key} size={20} />}
+                          {s.key === 'wiki' ? (
+                            <span className="w-5 h-5 rounded-md bg-[var(--m3-surface-container)] grid place-items-center text-[var(--m3-on-surface-variant)]">
+                              <IconBookmarkRegular width={12} height={12} />
+                            </span>
+                          ) : (
+                            <SourceBadge source={s.key} size={20} />
+                          )}
                           <span className="truncate">{s.label}</span>
                         </div>
                       ))}
@@ -1088,33 +1107,31 @@ export default function Workspace({
               </div>
             )}
             <div className="flex-1" />
-            {/* Ask a question — Fin 스타일 그라디언트 링 (인터콤 레퍼런스 예외) */}
-            <div className="rounded-full p-[1.5px] bg-gradient-to-r from-violet-400/60 via-rose-300/60 to-amber-300/60">
-              <div className="flex items-center gap-1 rounded-full bg-[var(--m3-surface-container-lowest)] pl-4 pr-1 py-1">
-                <input
-                  value={copilotQ}
-                  onChange={e => setCopilotQ(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && copilotQ.trim()) {
-                      runSeed(copilotQ.trim())
-                      setCopilotQ('')
-                    }
-                  }}
-                  placeholder="Ask a question"
-                  className="flex-1 bg-transparent outline-none text-[13px] min-w-0"
-                />
-                <button
-                  onClick={() => {
-                    if (!copilotQ.trim()) return
+            {/* Ask a question — 하우스 스타일 (헤어라인 + 블랙 버튼) */}
+            <div className="flex items-center gap-1.5 rounded-lg border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] pl-3 pr-1 py-1 focus-within:border-[var(--m3-outline)] transition-colors">
+              <input
+                value={copilotQ}
+                onChange={e => setCopilotQ(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && copilotQ.trim()) {
                     runSeed(copilotQ.trim())
                     setCopilotQ('')
-                  }}
-                  aria-label="Ask"
-                  className="w-7 h-7 rounded-full bg-[var(--seed-color-bg-brand-solid)] text-white grid place-items-center shrink-0"
-                >
-                  <IconChattingSendRegular width={13} height={13} />
-                </button>
-              </div>
+                  }
+                }}
+                placeholder="Ask a question"
+                className="flex-1 bg-transparent outline-none text-[13px] min-w-0"
+              />
+              <button
+                onClick={() => {
+                  if (!copilotQ.trim()) return
+                  runSeed(copilotQ.trim())
+                  setCopilotQ('')
+                }}
+                aria-label="Ask"
+                className="w-7 h-7 rounded-md bg-[var(--seed-color-bg-brand-solid)] text-white grid place-items-center shrink-0"
+              >
+                <IconChattingSendRegular width={13} height={13} />
+              </button>
             </div>
           </div>
         ) : (
@@ -1463,7 +1480,9 @@ function SourceChips({ sources }: { sources: { key: SourceKey; label: string }[]
           className="flex items-center gap-1.5 text-[11px] text-[var(--m3-on-surface-variant)] bg-[var(--m3-surface-container)] rounded-md pl-1 pr-2 py-0.5"
         >
           {s.key === 'wiki' ? (
-            <span className="agent-dot w-2.5 h-2.5 mx-0.5" aria-hidden />
+            <span className="w-4 h-4 rounded bg-[var(--m3-surface-container-high)] grid place-items-center" aria-hidden>
+              <IconBookmarkRegular width={10} height={10} />
+            </span>
           ) : (
             <SourceBadge source={s.key} size={16} />
           )}
@@ -1474,7 +1493,7 @@ function SourceChips({ sources }: { sources: { key: SourceKey; label: string }[]
   )
 }
 
-function Bubble({ m }: { m: ThreadMessage }) {
+function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
   const mine = m.from === 'me'
   const tool = m.tool ? TOOLS[m.tool] : null
   return (
@@ -1496,6 +1515,11 @@ function Bubble({ m }: { m: ThreadMessage }) {
               {tool.logo}
             </span>
             {m.toolNote}
+            {onUndo && (
+              <button onClick={onUndo} className="ml-1 underline underline-offset-2 hover:text-[var(--m3-on-surface)]">
+                Undo
+              </button>
+            )}
           </div>
         )}
         {m.image && (
