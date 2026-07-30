@@ -1,0 +1,114 @@
+import { motion } from 'framer-motion'
+import { IconArrowRegular } from '@seed-design/icon'
+import { briefing, homeStats } from '../data'
+import { Card, SourceBadge, sourceName } from '../components/ui'
+import { spatialExpressive } from '../motion'
+
+export default function Home({
+  pendingCount,
+  onOpenBrief,
+  goWorkspace,
+  goApprovals,
+}: {
+  pendingCount: number
+  onOpenBrief: (prompt: string) => void
+  goWorkspace: () => void
+  goApprovals: () => void
+}) {
+  const stats = [
+    homeStats[0],
+    { label: 'Pending approvals', value: `${pendingCount}`, sub: 'Review before anything goes out', onClick: goApprovals },
+    ...homeStats.slice(1),
+  ] as { label: string; value: string; sub: string; onClick?: () => void }[]
+
+  return (
+    <div className="max-w-5xl w-full mx-auto relative">
+      {/* 히어로 — 화면 상단 절반을 인사말이 차지한다 */}
+      <div className="relative min-h-[38vh] flex flex-col justify-end pb-12">
+        <motion.h1
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={spatialExpressive}
+          className="text-[clamp(32px,4vw,44px)] font-bold tracking-tight leading-tight"
+        >
+          Good morning, Junwon
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spatialExpressive, delay: 0.08 }}
+          className="text-[17px] text-[var(--m3-on-surface-variant)] mt-3"
+        >
+          Thursday, July 31 · Synced 128 items from 4 sources overnight
+        </motion.p>
+      </div>
+
+      <div className="relative">
+        <div className="grid grid-cols-4 gap-5 mb-10">
+          {stats.map((s, i) => (
+            <motion.div
+              key={s.label}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spatialExpressive, delay: 0.12 + i * 0.05 }}
+            >
+              <Card className={`p-5 h-full ${s.onClick ? 'cursor-pointer hover:shadow-[0_8px_26px_rgba(0,0,0,.12)] transition-shadow' : ''}`}>
+                <button className="text-left w-full" onClick={s.onClick} disabled={!s.onClick}>
+                  <div className="text-[13px] text-[var(--m3-on-surface-variant)]">{s.label}</div>
+                  <div className="text-[28px] font-bold mt-1.5 tabular-nums tracking-tight">{s.value}</div>
+                  <div className="text-xs text-[var(--m3-on-surface-variant)] mt-1">{s.sub}</div>
+                </button>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold text-lg">Today’s briefing</h2>
+          <button
+            onClick={goWorkspace}
+            className="text-sm text-[var(--m3-primary)] font-medium flex items-center gap-1 hover:underline"
+          >
+            Continue in Workspace <IconArrowRegular width={14} height={14} />
+          </button>
+        </div>
+        <div className="space-y-3.5">
+          {briefing.map((b, i) => (
+            <motion.div
+              key={b.id}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spatialExpressive, delay: 0.24 + i * 0.06 }}
+            >
+              <button
+                onClick={() => onOpenBrief(b.prompt)}
+                className="w-full text-left bg-[var(--m3-surface-container-lowest)] rounded-2xl px-5 py-4 flex items-center gap-4 shadow-[0_1px_2px_rgba(0,0,0,.04),0_10px_28px_-14px_rgba(0,0,0,.12)] hover:bg-[var(--m3-surface-container-low)] hover:shadow-[0_10px_30px_rgba(0,0,0,.12)] transition-[background-color,box-shadow] group"
+              >
+                <SourceBadge source={b.tool} size={38} />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline gap-2">
+                    <span className="font-semibold text-[16px] truncate">{b.title}</span>
+                    <span className="text-xs text-[var(--m3-on-surface-variant)] shrink-0">
+                      {sourceName(b.tool)} · {b.time}
+                    </span>
+                  </span>
+                  <span className="block text-sm text-[var(--m3-on-surface-variant)] truncate mt-1">{b.detail}</span>
+                </span>
+                <span className="text-xs px-3 py-1.5 rounded-lg bg-[var(--m3-surface-container)] text-[var(--m3-on-surface-variant)] shrink-0 group-hover:hidden">
+                  Ready
+                </span>
+                <span className="text-xs px-3 py-1.5 rounded-lg bg-[var(--m3-primary)] text-[var(--m3-on-primary)] shrink-0 hidden group-hover:flex items-center gap-1">
+                  Continue <IconArrowRegular width={11} height={11} />
+                </span>
+              </button>
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="text-xs text-[var(--m3-on-surface-variant)] mt-8 mb-4 text-center">
+          Everything in the briefing is a draft — nothing leaves the company without approval.
+        </p>
+      </div>
+    </div>
+  )
+}

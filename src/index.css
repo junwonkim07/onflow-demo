@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+body {
+  @apply antialiased;
+  font-family: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Inter", system-ui, sans-serif;
+  background: var(--m3-surface);
+  color: var(--m3-on-surface);
+}
+
+:root {
+  --seed-font-family: inherit;
+}
+
+/* ---------- Material 3 상태 표현 ---------- */
+
+/* 에이전트 상태 점 — 대기(정지) / 생각(펄스) / 준비(포커스 링) */
+.agent-dot {
+  border-radius: 50%;
+  background: var(--m3-primary);
+}
+.agent-dot--thinking {
+  animation: dot-pulse 1s ease-in-out infinite;
+}
+.agent-dot--ready {
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--m3-primary) 22%, transparent);
+}
+@keyframes dot-pulse {
+  50% { opacity: 0.35; transform: scale(0.82); }
+}
+
+/* 타이핑 중 '생각하는 상태' — M3 인디터미닛 리니어 프로그레스 */
+.progress-line {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  right: 14px;
+  height: 3px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--m3-primary) 16%, transparent);
+}
+.progress-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40%;
+  border-radius: 3px;
+  background: var(--m3-primary);
+  animation: m3-indeterminate 1.15s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes m3-indeterminate {
+  from { left: -42%; }
+  to { left: 104%; }
+}
+
+/* 타임라인의 '전원 가능' 구간 — primary 틴트 밴드 */
+.slot-band {
+  background: color-mix(in srgb, var(--m3-primary) 13%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--m3-primary) 55%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-dot--thinking { animation: none; }
+  .progress-line::after { animation: none; width: 100%; left: 0; }
+}
