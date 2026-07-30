@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { TOOLS, type ToolKey } from '../intent'
-import { IconHousekeepingBookRegular, IconFileRegular } from '@seed-design/icon'
 
 /** ERP/Drive처럼 TOOLS에 없는 소스까지 커버하는 아이콘 배지 */
 export function SourceBadge({ source, size = 28 }: { source: ToolKey | 'erp' | 'drive'; size?: number }) {
@@ -11,14 +10,20 @@ export function SourceBadge({ source, size = 28 }: { source: ToolKey | 'erp' | '
   }
   if (source === 'erp')
     return (
-      <div className="grid place-items-center bg-[var(--m3-tertiary-container)] text-[var(--m3-on-tertiary-container)]" style={style}>
-        <IconHousekeepingBookRegular width={size * 0.55} height={size * 0.55} />
+      /* 사방넷 레터마크 */
+      <div className="grid place-items-center text-white font-extrabold" style={{ ...style, backgroundColor: '#1e3a8a', fontSize: size * 0.48 }}>
+        S
       </div>
     )
   if (source === 'drive')
     return (
-      <div className="grid place-items-center bg-[var(--m3-secondary-container)] text-[var(--m3-on-secondary-container)]" style={style}>
-        <IconFileRegular width={size * 0.55} height={size * 0.55} />
+      /* 실제 Google Drive 로고 — 삼색 삼각형 */
+      <div className="grid place-items-center bg-[var(--m3-surface-container)]" style={style}>
+        <svg width={size * 0.62} height={size * 0.62} viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path d="M8.6 3.4h6.8L22 15.1h-6.8L8.6 3.4Z" fill="#FBBC04" />
+          <path d="M8.6 3.4 2 15.1l3.4 5.9 6.6-11.7-3.4-5.9Z" fill="#34A853" />
+          <path d="M5.4 21h13.2l3.4-5.9H8.8L5.4 21Z" fill="#4285F4" />
+        </svg>
       </div>
     )
   const tool = TOOLS[source]

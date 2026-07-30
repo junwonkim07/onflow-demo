@@ -111,7 +111,7 @@ export default function Home({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spatialExpressive, delay: 0.14 }}
-          className="mt-14 w-full max-w-2xl mx-auto"
+          className="mt-14 w-full"
         >
           <HomeChatBar onSubmit={onOpenBrief} />
         </motion.div>

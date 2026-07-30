@@ -36,9 +36,18 @@ export const TOOLS: Record<ToolKey, ToolMeta> = {
     colorSoft: 'rgba(25,25,25,.07)',
     actionLabel: 'Create page',
     logo: (
+      /* 실제 Notion 로고 — 페이지 + 세리프 N */
       <svg viewBox="0 0 24 24" fill="none" {...logoProps}>
-        <rect x="3.5" y="3.5" width="17" height="17" rx="2.5" stroke="currentColor" strokeWidth="1.8" />
-        <path d="M8 16.5v-9l7.5 9v-9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path
+          d="M4.2 4.4 14.9 3.6c1.3-.1 1.7 0 2.5.6l3.3 2.3c.6.4.8.6.8 1.1v12.6c0 .9-.3 1.4-1.5 1.5l-12.4.7c-.9 0-1.3-.1-1.8-.7L3.3 18.4c-.5-.7-.7-1.2-.7-1.8V5.8c0-.7.3-1.3 1.6-1.4Z"
+          fill="#fff"
+          stroke="#191919"
+          strokeWidth="1.1"
+        />
+        <path
+          d="M8.4 8.7v-.2c0-.5.1-.7.6-.8l1.3-.1 4.4 6.7V8.4l-1.1-.1v-.1c0-.4.2-.6.7-.6l2.9-.2v.3c0 .3-.1.5-.5.5l-.7.1v9.4l-1.4.4c-.7.2-1 .1-1.5-.5l-4.2-6.5v6.2l1.2.3s0 .5-.7.5l-2.1.1c-.1-.3.1-.6.4-.7l.6-.1V9.3l-1-.1c-.1-.3.1-.5.5-.5h.6Z"
+          fill="#191919"
+        />
       </svg>
     ),
   },
@@ -49,9 +58,13 @@ export const TOOLS: Record<ToolKey, ToolMeta> = {
     colorSoft: 'rgba(197,34,31,.08)',
     actionLabel: 'Draft email',
     logo: (
+      /* 실제 Gmail 로고 — 4색 M 봉투 */
       <svg viewBox="0 0 24 24" fill="none" {...logoProps}>
-        <rect x="3" y="5.5" width="18" height="13" rx="2" stroke="#C5221F" strokeWidth="1.8" />
-        <path d="m4.5 7.5 7.5 5.5 7.5-5.5" stroke="#C5221F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M2.5 19h3.2v-8.1L2.5 8.5V17.6c0 .8.6 1.4 1.4 1.4h-1.4Z" fill="#34A853" />
+        <path d="M18.3 19h3.2V8.5l-3.2 2.4V19Z" fill="#4285F4" />
+        <path d="M18.3 6.7v4.2l3.2-2.4V7.4c0-1.8-2-2.8-3.4-1.7l.2 1Z" fill="#FBBC04" />
+        <path d="M5.7 10.9V6.7l6.3 4.7 6.3-4.7v4.2L12 15.6l-6.3-4.7Z" fill="#EA4335" />
+        <path d="M2.5 7.4v1.1l3.2 2.4V6.7l-.2-1C4 4.6 2.5 5.6 2.5 7.4Z" fill="#C5221F" />
       </svg>
     ),
   },
@@ -62,9 +75,21 @@ export const TOOLS: Record<ToolKey, ToolMeta> = {
     colorSoft: 'rgba(26,115,232,.09)',
     actionLabel: 'Update event',
     logo: (
+      /* 실제 Google Calendar 로고 — 색상 프레임 + 31 */
       <svg viewBox="0 0 24 24" fill="none" {...logoProps}>
-        <rect x="3.5" y="5" width="17" height="15.5" rx="2" stroke="#1A73E8" strokeWidth="1.8" />
-        <path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="#1A73E8" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M17.5 6.5h-11v11h11v-11Z" fill="#fff" />
+        <path d="M17.5 21 21 17.5h-3.5V21Z" fill="#1A73E8" />
+        <path d="M21 6.5h-3.5v11H21v-11Z" fill="#4285F4" />
+        <path d="M17.5 17.5h-11V21h11v-3.5Z" fill="#34A853" />
+        <path d="M3 17.5c0 1.9 1.6 3.5 3.5 3.5v-3.5H3Z" fill="#188038" />
+        <path d="M6.5 3C4.6 3 3 4.6 3 6.5h3.5V3Z" fill="#1967D2" />
+        <path d="M3 6.5h3.5v11H3v-11Z" fill="#FBBC04" />
+        <path d="M21 6.5C21 4.6 19.4 3 17.5 3v3.5H21Z" fill="#1A73E8" />
+        <path d="M6.5 3h11v3.5h-11V3Z" fill="#1A73E8" />
+        <path
+          d="M9 12.2c0-1.5 1.1-2.4 2.5-2.4 1.3 0 2.3.8 2.3 2 0 .8-.5 1.3-1 1.6.7.3 1.2.9 1.2 1.8 0 1.3-1.1 2.2-2.6 2.2-1.4 0-2.5-.9-2.6-2.2h1.3c.1.6.6 1 1.3 1 .7 0 1.2-.4 1.2-1.1 0-.7-.5-1.1-1.3-1.1h-.6v-1.1h.6c.7 0 1.1-.4 1.1-1 0-.6-.4-1-1-1s-1.1.4-1.1 1.2H9Z"
+          fill="#1A73E8"
+        />
       </svg>
     ),
   },
