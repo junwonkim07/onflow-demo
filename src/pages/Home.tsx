@@ -54,7 +54,7 @@ export default function Home({
               animate={{ opacity: 1, y: 0 }}
               transition={{ ...spatialExpressive, delay: 0.12 + i * 0.05 }}
             >
-              <Card className={`p-5 h-full ${s.onClick ? 'cursor-pointer hover:shadow-[0_8px_26px_rgba(0,0,0,.12)] transition-shadow' : ''}`}>
+              <Card className={`p-5 h-full ${s.onClick ? 'cursor-pointer hover:bg-[var(--m3-surface-container-low)] transition-colors' : ''}`}>
                 <button className="text-left w-full" onClick={s.onClick} disabled={!s.onClick}>
                   <div className="text-[13px] text-[var(--m3-on-surface-variant)]">{s.label}</div>
                   <div className="text-[28px] font-bold mt-1.5 tabular-nums tracking-tight">{s.value}</div>
@@ -118,7 +118,7 @@ export default function Home({
             >
               <button
                 onClick={() => onOpenBrief(b.prompt)}
-                className="w-full text-left bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] px-5 py-4 flex items-center gap-4 shadow-[0_1px_2px_rgba(0,0,0,.03)] hover:bg-[var(--m3-surface-container-low)] hover:border-[var(--m3-outline)] transition-colors group"
+                className="w-full text-left bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] px-5 py-4 flex items-center gap-4 hover:bg-[var(--m3-surface-container-low)] transition-colors group"
               >
                 <SourceBadge source={b.tool} size={38} />
                 <span className="min-w-0 flex-1">

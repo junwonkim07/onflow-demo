@@ -91,7 +91,7 @@ export default function Approvals({
 function MailPreview({ a }: { a: Approval }) {
   const tool = TOOLS.gmail
   return (
-    <div className="rounded-2xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,.05)]">
+    <div className="rounded-2xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-hidden ">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-low)]">
         <span style={{ color: tool.color }}>{tool.logo}</span>
         <span className="text-[13px] font-semibold">New email draft</span>
@@ -123,7 +123,7 @@ function SlackPreview({ a }: { a: Approval }) {
   const tool = TOOLS.slack
   const channel = a.target.split('·')[0].trim()
   return (
-    <div className="rounded-2xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,.05)]">
+    <div className="rounded-2xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-hidden ">
       <div className="flex items-center gap-2 px-4 py-2.5 border-b border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-low)]">
         <span style={{ color: tool.color }}>{tool.logo}</span>
         <span className="text-[13px] font-semibold">{channel}</span>

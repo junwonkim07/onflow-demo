@@ -42,7 +42,7 @@ export function sourceName(source: ToolKey | 'erp' | 'drive'): string {
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={`bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] shadow-[0_1px_2px_rgba(0,0,0,.03)] ${className}`}
+      className={`bg-[var(--m3-surface-container-lowest)] rounded-xl border border-[var(--m3-outline-variant)] ${className}`}
     >
       {children}
     </div>

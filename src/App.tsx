@@ -166,7 +166,7 @@ export default function App() {
           <img src={asset('img/avatar-junwon.jpg')} alt="Junwon Kim" className="w-9 h-9 rounded-full object-cover" />
         </header>
 
-        <main className="flex-1 min-h-0 overflow-y-auto px-10 pb-8 flex">
+        <main className={`flex-1 min-h-0 flex ${page === 'workspace' ? 'overflow-hidden' : 'overflow-y-auto px-10 pb-8'}`}>
           <motion.div
             key={page}
             initial={{ opacity: 0, y: 6 }}

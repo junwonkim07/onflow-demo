@@ -15,7 +15,6 @@ import {
   IconExpandMoreRegular,
   IconReviewStarRegular,
   IconMoreHorizRegular,
-  IconMoonRegular,
   IconHomeRegular,
   IconChattingRegular,
   IconWriteRegular,
@@ -110,7 +109,147 @@ const SCENARIOS: { key: string; label: string; steps: DemoStep[] }[] = [
   },
 ]
 
-type Session = { id: number; title: string; titled: boolean; thread: ThreadMessage[] }
+type Session = { id: number; title: string; titled: boolean; thread: ThreadMessage[]; createdByYou?: boolean }
+
+/* ---------- Inbox 뷰 시스템 ---------- */
+
+type ViewKey = 'inbox' | 'mentions' | 'created' | 'all' | 'unassigned' | 'dashboard' | 'cs' | 'am' | 'pq' | 'fr' | 'agent'
+
+type InboxItem = {
+  id: string
+  source: Exclude<SourceKey, 'wiki'>
+  from: string
+  title: string
+  preview: string
+  time: string
+  body: string
+  /** "Draft reply in session" 클릭 시 새 세션 컴포저에 심어지는 요청 */
+  prompt: string
+}
+
+const MENTIONS: InboxItem[] = [
+  {
+    id: 'm1',
+    source: 'slack',
+    from: 'Mina Park',
+    title: '#logistics-ops — order deadline',
+    preview: '@junwon is the summer order entry really closing…',
+    time: '1h',
+    body: '@junwon is the summer order entry really closing tomorrow 6 PM? Two vendors asked if late SKUs can still go in.',
+    prompt: 'Reply in #logistics-ops about the order deadline questions',
+  },
+  {
+    id: 'm2',
+    source: 'slack',
+    from: 'Dana Lee',
+    title: '#design-team — review time',
+    preview: '@junwon did the design review move? My calendar…',
+    time: '2h',
+    body: '@junwon did the design review move? My calendar still shows 2 PM but Sihoon said 3.',
+    prompt: 'Post in #design-team that the review moved from 2pm to 3pm',
+  },
+  {
+    id: 'm3',
+    source: 'gmail',
+    from: 'Hanbit Trading',
+    title: 'RE: July price update',
+    preview: 'Hi Junwon, following up on our July price sheet…',
+    time: '2h',
+    body: 'Hi Junwon,\n\nFollowing up on our July price sheet (+3.2% vs June). Could you confirm by Friday so we can lock August volumes?\n\nBest,\nHanbit purchasing',
+    prompt: 'Email Hanbit a reply about the price increase',
+  },
+]
+
+const VIEW_ITEMS: Record<'cs' | 'am' | 'pq' | 'fr', InboxItem[]> = {
+  cs: [
+    {
+      id: 'cs1',
+      source: 'gmail',
+      from: 'Carlos Rivera',
+      title: 'Damaged item — refund?',
+      preview: 'The table I ordered just arrived and one of the legs…',
+      time: '1m',
+      body: 'The table I ordered just arrived and one of the legs is broken. What’s your refund policy for damaged items?',
+      prompt: 'Email Hanbit a reply about the price increase',
+    },
+    {
+      id: 'cs2',
+      source: 'slack',
+      from: 'CS bot',
+      title: '#cs-escalations — login issue',
+      preview: 'Customer #4821 keeps getting login failures on…',
+      time: '30m',
+      body: 'Customer #4821 keeps getting login failures on the store app. 3rd report today — possible incident?',
+      prompt: 'Draft an agenda doc for the 9:30 logistics meeting',
+    },
+  ],
+  am: [
+    {
+      id: 'am1',
+      source: 'gmail',
+      from: 'Daesung Distribution',
+      title: 'August promo volumes',
+      preview: 'We’d like to double promo volume for August…',
+      time: '3h',
+      body: 'We’d like to double promo volume for August. Can you confirm pricing terms this week?',
+      prompt: 'Email Hanbit a reply about the price increase',
+    },
+    {
+      id: 'am2',
+      source: 'calendar',
+      from: 'Aqara Life',
+      title: 'Contract meeting — reschedule?',
+      preview: 'Sanghyun asked if the contract meeting can move…',
+      time: '1d',
+      body: 'Sanghyun asked if the contract meeting can move to next Monday afternoon.',
+      prompt: 'Email Sanghyun to schedule the meeting',
+    },
+  ],
+  pq: [
+    {
+      id: 'pq1',
+      source: 'erp',
+      from: 'Sabangnet ERP',
+      title: 'SKU-2381 stock mismatch',
+      preview: 'Nightly sync flagged a quantity mismatch on…',
+      time: '6h',
+      body: 'Nightly sync flagged a quantity mismatch on SKU-2381 (Summer Cooling Pad): ERP 8 vs price sheet 10.',
+      prompt: 'Notify logistics about SKUs below safety stock',
+    },
+    {
+      id: 'pq2',
+      source: 'slack',
+      from: 'Jihoon',
+      title: '#product — sizing question',
+      preview: 'Anyone know if the cooling pad L size ships…',
+      time: '1d',
+      body: 'Anyone know if the cooling pad L size ships this month? A reseller is asking.',
+      prompt: 'Reply in #logistics-ops about the order deadline questions',
+    },
+  ],
+  fr: [
+    {
+      id: 'fr1',
+      source: 'notion',
+      from: 'Feedback form',
+      title: 'Feature request — weekly digest',
+      preview: 'Would love a Monday-morning digest of everything…',
+      time: '2d',
+      body: 'Would love a Monday-morning digest of everything the agent ran last week, grouped by tool.',
+      prompt: 'Draft an agenda doc for the 9:30 logistics meeting',
+    },
+    {
+      id: 'fr2',
+      source: 'slack',
+      from: 'Sihoon',
+      title: '#feedback — approvals UX',
+      preview: 'Approve & send should show a diff when I edited…',
+      time: '3d',
+      body: 'Approve & send should show a diff when I edited the draft — otherwise I can’t tell what changed.',
+      prompt: 'Trying to set a meeting tomorrow — when is everyone free?',
+    },
+  ],
+}
 
 const initialSessions: Session[] = [
   { id: 1, title: 'Ops daily', titled: true, thread: initialThread },
@@ -167,6 +306,9 @@ export default function Workspace({
   const [demoKey, setDemoKey] = useState<string | null>(null)
   const [rightTab, setRightTab] = useState<'details' | 'copilot'>('copilot')
   const [copilotQ, setCopilotQ] = useState('')
+  const [view, setView] = useState<ViewKey>('inbox')
+  const [itemId, setItemId] = useState<string | null>(null)
+  const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const scrollRef = useRef<HTMLDivElement>(null)
   const demoToken = useRef(0)
 
@@ -191,9 +333,30 @@ export default function Workspace({
 
   const newSession = () => {
     const id = nextId()
-    setSessions(ss => [{ id, title: 'New session', titled: false, thread: [] }, ...ss])
+    setSessions(ss => [{ id, title: 'New session', titled: false, thread: [], createdByYou: true }, ...ss])
     setActiveId(id)
     clearAll()
+  }
+
+  // 뷰 파생 상태
+  const sessionsMode = view === 'inbox' || view === 'created' || view === 'all'
+  const listSessions = view === 'created' ? sessions.filter(s => s.createdByYou) : sessions
+  const items: InboxItem[] =
+    view === 'mentions' ? MENTIONS : view === 'cs' || view === 'am' || view === 'pq' || view === 'fr' ? VIEW_ITEMS[view] : []
+  const itemsMode = items.length > 0 || view === 'mentions'
+  const selectedItem = itemsMode ? items.find(i => i.id === itemId) ?? items[0] ?? null : null
+  const showList = sessionsMode || itemsMode || view === 'unassigned'
+
+  const openView = (v: ViewKey) => {
+    setView(v)
+    setItemId(null)
+  }
+
+  /** 아이템에서 새 세션으로 답장 초안 시작 */
+  const replyToItem = (item: InboxItem) => {
+    setView('inbox')
+    newSession()
+    runSeed(item.prompt)
   }
 
   useEffect(() => {
@@ -382,7 +545,7 @@ export default function Workspace({
 
   return (
     <div
-      className="flex-1 min-h-0 flex rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] shadow-[0_1px_2px_rgba(0,0,0,.03)] overflow-hidden text-[13px]"
+      className="flex-1 min-h-0 flex border-t border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-hidden text-[13px]"
       onKeyDown={e => e.key === 'Escape' && setDismissed(true)}
     >
       {/* ── Col 1: Inbox nav ─────────────────────── */}
@@ -399,24 +562,39 @@ export default function Workspace({
           </span>
         </div>
         <div className="px-2 space-y-px overflow-y-auto">
-          <NavRow Icon={IconHomeRegular} label="Your inbox" count={sessions.length} active />
-          <NavRow Icon={IconChattingRegular} label="Mentions" count={3} />
-          <NavRow Icon={IconWriteRegular} label="Created by you" count={0} />
-          <NavRow Icon={IconListRegular} label="All" count={2370} />
-          <NavRow Icon={IconMyProfileRegular} label="Unassigned" count={0} />
-          <NavRow Icon={IconChartRegular} label="Dashboard" />
+          <NavRow Icon={IconHomeRegular} label="Your inbox" count={sessions.length} active={view === 'inbox'} onClick={() => openView('inbox')} />
+          <NavRow Icon={IconChattingRegular} label="Mentions" count={MENTIONS.filter(m => !readIds.has(m.id)).length} active={view === 'mentions'} onClick={() => openView('mentions')} />
+          <NavRow Icon={IconWriteRegular} label="Created by you" count={sessions.filter(s => s.createdByYou).length} active={view === 'created'} onClick={() => openView('created')} />
+          <NavRow Icon={IconListRegular} label="All" count={sessions.length} active={view === 'all'} onClick={() => openView('all')} />
+          <NavRow Icon={IconMyProfileRegular} label="Unassigned" count={0} active={view === 'unassigned'} onClick={() => openView('unassigned')} />
+          <NavRow Icon={IconChartRegular} label="Dashboard" active={view === 'dashboard'} onClick={() => openView('dashboard')} />
           <div className="pt-3 pb-1 px-2 text-[11px] font-semibold text-[var(--m3-on-surface-variant)] flex items-center justify-between">
             Views <IconExpandMoreRegular width={12} height={12} />
           </div>
           <div className="border-l border-[var(--m3-outline-variant)] ml-3.5 pl-1 space-y-px">
-            {['Customer Support', 'Account Management', 'Product Questions', 'Feedback & Requests'].map(v => (
-              <button key={v} className="w-full text-left px-2 py-1 rounded-md text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)] truncate">
+            {(
+              [
+                ['cs', 'Customer Support'],
+                ['am', 'Account Management'],
+                ['pq', 'Product Questions'],
+                ['fr', 'Feedback & Requests'],
+              ] as [ViewKey, string][]
+            ).map(([k, v]) => (
+              <button
+                key={k}
+                onClick={() => openView(k)}
+                className={`w-full text-left px-2 py-1 rounded-md truncate transition-colors ${
+                  view === k
+                    ? 'bg-[var(--m3-surface-container)] font-semibold'
+                    : 'text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]'
+                }`}
+              >
                 {v}
               </button>
             ))}
           </div>
           <div className="pt-2">
-            <NavRow Icon={IconCheckFlowerRegular} label="Onflow AI Agent" chevron />
+            <NavRow Icon={IconCheckFlowerRegular} label="Onflow AI Agent" chevron active={view === 'agent'} onClick={() => openView('agent')} />
           </div>
         </div>
         <div className="flex-1" />
@@ -434,18 +612,56 @@ export default function Workspace({
         </div>
       </aside>
 
-      {/* ── Col 2: Session list ──────────────────── */}
+      {/* ── Col 2: List (sessions or items) ──────── */}
+      {showList && (
       <aside className="w-60 shrink-0 hidden md:flex flex-col border-r border-[var(--m3-outline-variant)]">
         <div className="h-12 shrink-0 flex items-center justify-between px-3.5 border-b border-[var(--m3-outline-variant)]">
           <button className="flex items-center gap-1 font-semibold">
-            {sessions.length} Open <IconExpandMoreRegular width={13} height={13} className="text-[var(--m3-on-surface-variant)]" />
+            {sessionsMode ? `${listSessions.length} Open` : `${items.length} Open`}{' '}
+            <IconExpandMoreRegular width={13} height={13} className="text-[var(--m3-on-surface-variant)]" />
           </button>
           <button className="flex items-center gap-1 text-[var(--m3-on-surface-variant)]">
             Newest <IconExpandMoreRegular width={13} height={13} />
           </button>
         </div>
+        {itemsMode ? (
+          <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5">
+            {items.map(it => {
+              const active = selectedItem?.id === it.id
+              const unread = !readIds.has(it.id)
+              return (
+                <button
+                  key={it.id}
+                  onClick={() => {
+                    setItemId(it.id)
+                    setReadIds(rs => new Set(rs).add(it.id))
+                  }}
+                  className={`w-full text-left flex gap-2.5 px-2.5 py-2.5 rounded-lg transition-colors ${
+                    active ? 'bg-[var(--m3-surface-container)]' : 'hover:bg-[var(--m3-surface-container-low)]'
+                  }`}
+                >
+                  <SourceBadge source={it.source} size={28} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-baseline justify-between gap-2">
+                      <span className={`truncate ${unread ? 'font-bold' : 'font-semibold'}`}>{it.from}</span>
+                      <span className="text-[11px] text-[var(--m3-on-surface-variant)] shrink-0 flex items-center gap-1.5">
+                        {unread && <span className="w-1.5 h-1.5 rounded-full bg-[var(--m3-primary)]" />}
+                        {it.time}
+                      </span>
+                    </span>
+                    <span className="block text-[12px] text-[var(--m3-on-surface-variant)] truncate mt-0.5">{it.preview}</span>
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        ) : view === 'unassigned' ? (
+          <div className="flex-1 grid place-items-center p-6 text-center text-[12px] text-[var(--m3-on-surface-variant)]">
+            Nothing unassigned —<br />Onflow triages everything it can.
+          </div>
+        ) : (
         <div className="flex-1 overflow-y-auto p-1.5 space-y-0.5">
-          {sessions.map((s, i) => {
+          {listSessions.map((s, i) => {
             const active = s.id === activeId
             const last = s.thread[s.thread.length - 1]
             return (
@@ -478,9 +694,30 @@ export default function Workspace({
             )
           })}
         </div>
+        )}
       </aside>
+      )}
 
-      {/* ── Col 3: Conversation ──────────────────── */}
+      {/* ── Col 3: Center ────────────────────────── */}
+      {view === 'dashboard' ? (
+        <DashboardPanel sessions={sessions} />
+      ) : view === 'agent' ? (
+        <AgentPanel />
+      ) : view === 'unassigned' ? (
+        <section className="flex-1 min-w-0 grid place-items-center text-center p-8">
+          <div>
+            <div className="w-12 h-12 mx-auto rounded-full bg-[var(--m3-surface-container)] grid place-items-center text-[var(--m3-on-surface-variant)] mb-3">
+              <IconCheckRegular width={20} height={20} />
+            </div>
+            <h2 className="font-bold text-[15px]">All caught up</h2>
+            <p className="text-[12px] text-[var(--m3-on-surface-variant)] mt-1">
+              Every conversation is either assigned or handled by the agent.
+            </p>
+          </div>
+        </section>
+      ) : itemsMode && selectedItem ? (
+        <ItemDetail item={selectedItem} onReply={() => replyToItem(selectedItem)} />
+      ) : (
       <section className="flex-1 min-w-0 flex flex-col">
         <header className="h-12 shrink-0 flex items-center gap-1 px-4 border-b border-[var(--m3-outline-variant)]">
           <span className={`agent-dot w-2 h-2 mr-1.5 ${dotClass}`} aria-hidden />
@@ -497,7 +734,7 @@ export default function Workspace({
               />
             ))}
           </div>
-          {[IconReviewStarRegular, IconMoreHorizRegular, IconMoonRegular].map((I, i) => (
+          {[IconReviewStarRegular, IconMoreHorizRegular].map((I, i) => (
             <button key={i} className="w-8 h-8 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]">
               <I width={16} height={16} />
             </button>
@@ -534,7 +771,7 @@ export default function Workspace({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, transition: effect }}
                 transition={spatialExpressive}
-                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] shadow-[0_8px_28px_rgba(0,0,0,.10)]"
+                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] shadow-[0_10px_30px_rgba(0,0,0,.05)]"
                 aria-label="Availability answer"
               >
                 <div className="p-3.5">
@@ -591,7 +828,7 @@ export default function Workspace({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, transition: effect }}
                 transition={spatialExpressive}
-                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] shadow-[0_8px_28px_rgba(0,0,0,.10)]"
+                className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] shadow-[0_10px_30px_rgba(0,0,0,.05)]"
                 aria-label="Source conflict"
               >
                 <div className="p-3.5">
@@ -652,7 +889,7 @@ export default function Workspace({
                 className="rounded-xl overflow-hidden border bg-[var(--m3-surface-container-lowest)]"
                 style={{
                   borderColor: actionIntent.tool.color,
-                  boxShadow: `0 8px 28px ${actionIntent.tool.color}26`,
+                  boxShadow: `0 8px 30px ${actionIntent.tool.color}1c`,
                 }}
                 aria-label="Run preview"
               >
@@ -705,7 +942,7 @@ export default function Workspace({
 
           {/* Reply 컴포저 — 인터콤 포맷 */}
           <div
-            className={`relative rounded-xl border bg-[var(--m3-surface-container-lowest)] shadow-[0_1px_2px_rgba(0,0,0,.03)] transition-colors ${
+            className={`relative rounded-xl border bg-[var(--m3-surface-container-lowest)]  transition-colors ${
               anyCard ? 'border-[var(--m3-outline)]' : 'border-[var(--m3-outline-variant)] focus-within:border-[var(--m3-outline)]'
             }`}
           >
@@ -782,8 +1019,10 @@ export default function Workspace({
           </div>
         </footer>
       </section>
+      )}
 
       {/* ── Col 4: Details / Copilot ─────────────── */}
+      {sessionsMode && (
       <aside className="w-72 shrink-0 hidden xl:flex flex-col border-l border-[var(--m3-outline-variant)]">
         <div className="h-12 shrink-0 flex items-center gap-4 px-4 border-b border-[var(--m3-outline-variant)]">
           {(['details', 'copilot'] as const).map(t => (
@@ -929,7 +1168,158 @@ export default function Workspace({
           </div>
         )}
       </aside>
+      )}
     </div>
+  )
+}
+
+/* ---------- Item detail (mentions / views) ---------- */
+
+function ItemDetail({ item, onReply }: { item: InboxItem; onReply: () => void }) {
+  return (
+    <section className="flex-1 min-w-0 flex flex-col">
+      <header className="h-12 shrink-0 flex items-center gap-2.5 px-4 border-b border-[var(--m3-outline-variant)]">
+        <SourceBadge source={item.source} size={22} />
+        <span className="font-bold text-[15px] truncate">{item.title}</span>
+        <span className="text-[11px] text-[var(--m3-on-surface-variant)]">{item.time}</span>
+        <div className="flex-1" />
+        {[IconReviewStarRegular, IconMoreHorizRegular].map((I, i) => (
+          <button key={i} className="w-8 h-8 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]">
+            <I width={16} height={16} />
+          </button>
+        ))}
+      </header>
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-xl mx-auto">
+          <div className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="w-8 h-8 rounded-full bg-[var(--m3-surface-container-high)] grid place-items-center text-[12px] font-bold">
+                {item.from[0]}
+              </span>
+              <div className="leading-tight">
+                <div className="font-bold">{item.from}</div>
+                <div className="text-[11px] text-[var(--m3-on-surface-variant)]">{item.time} ago</div>
+              </div>
+            </div>
+            <p className="whitespace-pre-line leading-relaxed">{item.body}</p>
+          </div>
+          <div className="flex items-center gap-2 mt-4">
+            <button
+              onClick={onReply}
+              className="h-9 px-4 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-white text-[12px] font-bold flex items-center gap-1.5"
+            >
+              <IconWriteRegular width={14} height={14} /> Draft reply in a session
+            </button>
+            <span className="text-[11px] text-[var(--m3-on-surface-variant)]">
+              Opens a new session with the reply pre-typed — nothing sends without you
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------- Dashboard ---------- */
+
+function DashboardPanel({ sessions }: { sessions: Session[] }) {
+  const bars = [42, 65, 38, 80, 58, 72, 90]
+  const stats: [string, string, string][] = [
+    ['Runs today', '12', 'all after approval'],
+    ['Open sessions', String(sessions.length), 'across the team'],
+    ['Avg. prep time', '0.8s', 'intent → ready draft'],
+    ['Items synced', '128', 'overnight, 4 sources'],
+  ]
+  return (
+    <section className="flex-1 min-w-0 overflow-y-auto p-6">
+      <div className="max-w-3xl mx-auto">
+        <h2 className="font-bold text-[17px] mb-4">Dashboard</h2>
+        <div className="grid grid-cols-4 gap-3 mb-6">
+          {stats.map(([label, value, sub]) => (
+            <div key={label} className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-3.5">
+              <div className="text-[11px] text-[var(--m3-on-surface-variant)]">{label}</div>
+              <div className="text-[22px] font-bold tabular-nums mt-0.5">{value}</div>
+              <div className="text-[10px] text-[var(--m3-on-surface-variant)] mt-0.5">{sub}</div>
+            </div>
+          ))}
+        </div>
+        <div className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-4">
+          <div className="flex items-baseline justify-between mb-3">
+            <span className="font-semibold">Agent runs this week</span>
+            <span className="text-[11px] text-[var(--m3-on-surface-variant)]">Mon – Sun</span>
+          </div>
+          <div className="flex items-end gap-2 h-28">
+            {bars.map((h, i) => (
+              <div key={i} className="flex-1 rounded-t-md bg-[var(--m3-primary)]" style={{ height: `${h}%`, opacity: i === 6 ? 1 : 0.45 }} />
+            ))}
+          </div>
+          <div className="flex gap-2 mt-1.5 text-[10px] text-[var(--m3-on-surface-variant)]">
+            {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+              <span key={i} className="flex-1 text-center">{d}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------- Onflow AI Agent panel ---------- */
+
+function AgentPanel() {
+  return (
+    <section className="flex-1 min-w-0 overflow-y-auto p-6">
+      <div className="max-w-xl mx-auto">
+        <div className="flex items-center gap-3 mb-5">
+          <span className="w-11 h-11 rounded-full bg-[var(--m3-primary-container)] text-[var(--m3-on-primary-container)] grid place-items-center">
+            <IconCheckFlowerRegular width={22} height={22} />
+          </span>
+          <div>
+            <h2 className="font-bold text-[17px]">Onflow AI Agent</h2>
+            <span className="text-[11px] text-[var(--m3-on-surface-variant)] flex items-center gap-1.5">
+              <span className="agent-dot w-2 h-2" /> Active · watching 5 connected sources
+            </span>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <div className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-4">
+            <div className="text-[11px] font-bold text-[var(--m3-on-surface-variant)] mb-2">MODEL</div>
+            <div className="font-semibold">Gemini 2.5 Pro · Vertex AI</div>
+            <div className="text-[11px] text-[var(--m3-on-surface-variant)] mt-0.5">Lightweight intent model runs on every keystroke</div>
+          </div>
+          <div className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-4">
+            <div className="text-[11px] font-bold text-[var(--m3-on-surface-variant)] mb-2.5">CONNECTED TOOLS</div>
+            <div className="flex items-center gap-2">
+              {(['slack', 'notion', 'gmail', 'calendar', 'erp'] as const).map(k => (
+                <SourceBadge key={k} source={k} size={30} />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-4">
+            <div className="text-[11px] font-bold text-[var(--m3-on-surface-variant)] mb-2">GUARDRAILS</div>
+            <ul className="space-y-1.5">
+              {[
+                'Every outbound action is previewed and approved by a human',
+                'Mirrors each member’s permissions — no access, no answer',
+                'Documents outside your scope are never revealed to exist',
+              ].map(g => (
+                <li key={g} className="flex items-start gap-2">
+                  <IconCheckRegular width={13} height={13} className="mt-0.5 shrink-0 text-[var(--m3-primary)]" />
+                  {g}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] p-4 flex items-center">
+            <div>
+              <div className="text-[11px] font-bold text-[var(--m3-on-surface-variant)] mb-1">COMPANY MEMORY</div>
+              <div className="font-semibold">204 docs · 38 entities · compiled 5 min ago</div>
+            </div>
+            <span className="ml-auto text-[11px] text-[var(--m3-on-surface-variant)]">See Memory tab →</span>
+          </div>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -941,16 +1331,19 @@ function NavRow({
   count,
   active,
   chevron,
+  onClick,
 }: {
   Icon: typeof IconHomeRegular
   label: string
   count?: number
   active?: boolean
   chevron?: boolean
+  onClick?: () => void
 }) {
   return (
     <button
-      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg ${
+      onClick={onClick}
+      className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors ${
         active ? 'bg-[var(--m3-surface-container)] font-semibold' : 'hover:bg-[var(--m3-surface-container-low)]'
       }`}
     >
