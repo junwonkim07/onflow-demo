@@ -12,7 +12,7 @@
 
 - 스택: React 19 + Vite + TypeScript + Tailwind v4 + SEED Design(React 2.1) + framer-motion
 - 실행: `npm run dev` → http://localhost:5173
-- 배포 빌드: `npm run build -- --base=/onflow-demo/` (GitHub Pages 경로 필수)
+- 배포 빌드: `DEPLOY_BASE=/onflow-demo/ npm run build` (GitHub Pages 경로 필수 — vite.config가 env로 받는다. `--base` 플래그는 Git Bash가 경로를 망가뜨리니 쓰지 말 것)
 - UI 언어: **영어** (A16Z 시연용). 코드 주석은 한국어 OK.
 
 ---
@@ -125,7 +125,7 @@ npm run lint      # 기존 경고 2개(ui.tsx fast-refresh, Workspace thread dep
 
 - **백그라운드 탭에서 애니메이션/타이머가 멈춘다.** 데모 타이핑이 안 움직이면 탭이 가려진 것 (숨김 탭은 setTimeout이 1초로 클램프됨). `typeIn`/`runSeed`에 `document.hidden`이면 즉시 입력하는 가드가 이미 있다 — 지우지 말 것.
 - **AnimatePresence exit 중인 카드가 숨김 탭에서 DOM에 남는다.** 자동화 테스트로 카드를 찾을 땐 `querySelectorAll(...)`의 **마지막** 요소를 집어라.
-- **Pages 배포는 base 경로 필수**: `npm run build -- --base=/onflow-demo/`. 빼먹으면 배포에서 에셋 404.
+- **Pages 배포는 base 경로 필수**: `DEPLOY_BASE=/onflow-demo/ npm run build`. 빼먹으면 배포에서 에셋 404. (`--base` CLI 플래그는 Git Bash의 MSYS 경로 변환이 `/onflow-demo/`를 `C:/Program Files/Git/...`로 바꿔버려서 금지 — 실제로 한 번 터졌다.)
 - **npm run build에 tsc가 포함**되어 있다 (`tsc -b && vite build`) — 타입 에러가 있으면 빌드 자체가 실패한다.
 - 컴포저 `textarea`는 제어 컴포넌트다. 자동화로 값을 넣으려면 native setter + `input` 이벤트 디스패치가 필요하다.
 
