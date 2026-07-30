@@ -19,11 +19,11 @@ export default function Integrations() {
         desc={`${connectedCount} tools connected · 1,240 items synced today · every write runs only after approval`}
       />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {items.map((it, i) => (
           <motion.div key={it.key} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
             <Card className="p-4 flex items-start gap-3.5 h-full">
-              <SourceBadge source={it.key} size={40} />
+              <SourceBadge source={it.key} size={52} />
               <div className="flex-1 min-w-0">
                 <div className="font-semibold">{it.name}</div>
                 <p className="text-[13px] text-[var(--m3-on-surface-variant)] mt-0.5 leading-relaxed">{it.desc}</p>

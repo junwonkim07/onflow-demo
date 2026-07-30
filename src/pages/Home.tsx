@@ -1,8 +1,37 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { IconArrowRegular } from '@seed-design/icon'
+import { IconArrowRegular, IconChattingSendRegular } from '@seed-design/icon'
 import { briefing, homeStats, asset, type RecentTask } from '../data'
 import { Card, SourceBadge, sourceName } from '../components/ui'
 import { spatialExpressive } from '../motion'
+
+/** 홈 채팅바 — 입력하면 워크스페이스로 넘어가 자동 타이핑된다 */
+function HomeChatBar({ onSubmit }: { onSubmit: (text: string) => void }) {
+  const [v, setV] = useState('')
+  const go = () => {
+    if (!v.trim()) return
+    onSubmit(v.trim())
+    setV('')
+  }
+  return (
+    <div className="flex items-center gap-2 rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] pl-4 pr-1.5 py-1.5 focus-within:border-[var(--m3-outline)] transition-colors">
+      <input
+        value={v}
+        onChange={e => setV(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && go()}
+        placeholder="Ask Onflow anything — it previews before it runs"
+        className="flex-1 bg-transparent outline-none text-[15px] min-w-0 h-9"
+      />
+      <button
+        onClick={go}
+        aria-label="Ask"
+        className="w-9 h-9 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-white grid place-items-center shrink-0"
+      >
+        <IconChattingSendRegular width={16} height={16} />
+      </button>
+    </div>
+  )
+}
 
 export default function Home({
   pendingCount,
@@ -25,13 +54,13 @@ export default function Home({
 
   return (
     <div className="max-w-5xl w-full mx-auto relative">
-      {/* 히어로 — 화면 상단 절반을 인사말이 차지한다 */}
-      <div className="relative min-h-[38vh] flex flex-col justify-end pb-12">
+      {/* 히어로 + 채팅바 */}
+      <div className="relative min-h-[26vh] flex flex-col justify-end pb-8">
         <motion.h1
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={spatialExpressive}
-          className="text-[clamp(32px,4vw,44px)] font-bold tracking-tight leading-tight"
+          className="text-[clamp(30px,3.5vw,40px)] font-bold tracking-tight leading-tight"
         >
           Good morning, Junwon
         </motion.h1>
@@ -39,14 +68,22 @@ export default function Home({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...spatialExpressive, delay: 0.08 }}
-          className="text-[17px] text-[var(--m3-on-surface-variant)] mt-3"
+          className="text-[16px] text-[var(--m3-on-surface-variant)] mt-2.5"
         >
           Thursday, July 31 · Synced 128 items from 4 sources overnight
         </motion.p>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...spatialExpressive, delay: 0.14 }}
+          className="mt-5 max-w-2xl"
+        >
+          <HomeChatBar onSubmit={onOpenBrief} />
+        </motion.div>
       </div>
 
       <div className="relative">
-        <div className="grid grid-cols-4 gap-5 mb-10">
+        <div className="grid grid-cols-4 gap-3 mb-8">
           {stats.map((s, i) => (
             <motion.div
               key={s.label}
@@ -66,8 +103,8 @@ export default function Home({
         </div>
 
         {/* Recent tasks — Aside 스타일 활동 카드 */}
-        <h2 className="font-bold text-lg mb-4">Recent tasks</h2>
-        <div className="grid grid-cols-3 gap-5 mb-10">
+        <h2 className="font-bold text-lg mb-3">Recent tasks</h2>
+        <div className="grid grid-cols-3 gap-3 mb-8">
           {recent.slice(0, 3).map((t, i) => (
             <motion.div
               key={t.title + t.when}
@@ -108,7 +145,7 @@ export default function Home({
             Continue in Workspace <IconArrowRegular width={14} height={14} />
           </button>
         </div>
-        <div className="space-y-3.5">
+        <div className="space-y-2.5">
           {briefing.map((b, i) => (
             <motion.div
               key={b.id}

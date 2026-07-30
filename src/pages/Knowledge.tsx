@@ -351,7 +351,7 @@ export default function Knowledge({ onAsk }: { onAsk: (prompt: string) => void }
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-4 pb-6">
+      <div className="grid grid-cols-3 gap-3 pb-6">
         {filteredDocs.map((d, i) => (
           <motion.div key={d.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...spatialExpressive, delay: i * 0.03 }}>
             <button className="w-full h-full text-left" onClick={() => setSelectedId(`d-${d.id}`)}>

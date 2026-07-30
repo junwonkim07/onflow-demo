@@ -99,7 +99,7 @@ export default function App() {
     <MotionConfig reducedMotion="user">
     <div className="h-screen flex bg-[var(--m3-surface)] text-[var(--m3-on-surface)]">
       {/* M3 Navigation Rail */}
-      <nav className="relative w-14 shrink-0 flex flex-col items-center py-4 gap-1.5 bg-[var(--m3-surface-container-lowest)] border-r border-[var(--m3-outline-variant)]">
+      <nav className="relative w-16 shrink-0 flex flex-col items-center py-4 gap-2 bg-[var(--m3-surface-container-lowest)] border-r border-[var(--m3-outline-variant)]">
         {NAV.map(({ key, label, Icon }) => {
           const active = page === key
           return (
@@ -109,13 +109,13 @@ export default function App() {
               title={label}
               aria-label={label}
               aria-current={active ? 'page' : undefined}
-              className={`relative w-9 h-9 rounded-lg grid place-items-center transition-colors ${
+              className={`relative w-11 h-11 rounded-lg grid place-items-center transition-colors ${
                 active
                   ? 'bg-[var(--m3-surface-container-high)] text-[var(--m3-on-surface)]'
                   : 'text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]'
               }`}
             >
-              <Icon width={19} height={19} />
+              <Icon width={23} height={23} />
               {key === 'approvals' && pendingCount > 0 && (
                 <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[var(--m3-error)] text-white text-[10px] grid place-items-center">
                   {pendingCount}
@@ -128,9 +128,9 @@ export default function App() {
         <button
           title="Settings"
           aria-label="Settings"
-          className="w-9 h-9 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]"
+          className="w-11 h-11 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]"
         >
-          <IconSettingRegular width={19} height={19} />
+          <IconSettingRegular width={22} height={22} />
         </button>
       </nav>
 
@@ -163,7 +163,7 @@ export default function App() {
           <img src={asset('img/avatar-junwon.jpg')} alt="Junwon Kim" className="w-9 h-9 rounded-full object-cover" />
         </header>
 
-        <main className={`flex-1 min-h-0 flex ${page === 'workspace' ? 'overflow-hidden' : 'overflow-y-auto px-10 pb-8'}`}>
+        <main className="flex-1 min-h-0 flex overflow-hidden">
           <motion.div
             key={page}
             initial={{ opacity: 0, y: 6 }}
@@ -171,21 +171,27 @@ export default function App() {
             transition={{ duration: 0.16 }}
             className="flex-1 min-h-0 flex"
           >
-            {page === 'home' && (
-              <Home
-                pendingCount={pendingCount}
-                recent={recent}
-                onOpenBrief={openBrief}
-                goWorkspace={() => setPage('workspace')}
-                goApprovals={() => setPage('approvals')}
-              />
-            )}
-            {page === 'workspace' && (
+            {page === 'workspace' ? (
               <Workspace onExecuted={recordRun} seedPrompt={seed} onSeedConsumed={() => setSeed(null)} />
+            ) : (
+              /* 워크스페이스와 같은 인셋 윈도우 프레임 — 탭 간 연결성 */
+              <div className="flex-1 min-h-0 m-3 mt-0 rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] overflow-y-auto">
+                <div className="px-10 py-8 min-h-full flex">
+                  {page === 'home' && (
+                    <Home
+                      pendingCount={pendingCount}
+                      recent={recent}
+                      onOpenBrief={openBrief}
+                      goWorkspace={() => setPage('workspace')}
+                      goApprovals={() => setPage('approvals')}
+                    />
+                  )}
+                  {page === 'approvals' && <Approvals approvals={approvals} onDecide={decide} />}
+                  {page === 'knowledge' && <Knowledge onAsk={openBrief} />}
+                  {page === 'integrations' && <Integrations />}
+                </div>
+              </div>
             )}
-            {page === 'approvals' && <Approvals approvals={approvals} onDecide={decide} />}
-            {page === 'knowledge' && <Knowledge onAsk={openBrief} />}
-            {page === 'integrations' && <Integrations />}
           </motion.div>
         </main>
       </div>
