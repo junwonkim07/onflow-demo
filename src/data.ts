@@ -164,6 +164,30 @@ export const seedRecent: RecentTask[] = [
   },
 ]
 
+/* ---------- Work queue — 에이전트가 바로 실행할 수 있는 형태로 정리된 핵심 업무 ---------- */
+
+export type QueueTask = {
+  id: number
+  /** 0=P0(오늘 안 하면 문제) · 1=P1 · 2=P2 */
+  priority: 0 | 1 | 2
+  tool: ToolKey | 'erp'
+  title: string
+  detail: string
+  /** Run 클릭 시 새 세션 컴포저에 심어지는 문장 — 반드시 카드 하나를 유발해야 한다 */
+  prompt: string
+  due: string
+  status: 'ready' | 'approval'
+}
+
+export const queueTasks: QueueTask[] = [
+  { id: 1, priority: 0, tool: 'erp', title: 'Reorder SKUs below safety stock', detail: '12 SKUs flagged overnight · reorder quantities computed', prompt: 'Notify logistics about SKUs below safety stock', due: 'today', status: 'ready' },
+  { id: 2, priority: 0, tool: 'gmail', title: 'Confirm Hanbit price update', detail: '+3.2% vs June — reply needed to lock August volumes', prompt: 'Email Hanbit a reply about the price increase', due: 'Fri', status: 'ready' },
+  { id: 3, priority: 1, tool: 'gmail', title: 'Purchase order — Hanbit Trading', detail: '24 SKUs · ₩8,420,000 · drafted by the agent', prompt: '', due: 'today', status: 'approval' },
+  { id: 4, priority: 1, tool: 'calendar', title: 'Lock Aqara Life contract meeting', detail: 'Sanghyun proposed Mon 2 PM · invite not sent yet', prompt: 'Email Sanghyun to schedule the meeting', due: 'this week', status: 'ready' },
+  { id: 5, priority: 2, tool: 'slack', title: 'Answer order-deadline questions', detail: '3 mentions in #logistics-ops · a reply draft is ready', prompt: 'Reply in #logistics-ops about the order deadline questions', due: 'today', status: 'ready' },
+  { id: 6, priority: 2, tool: 'notion', title: 'Agenda for 9:30 logistics sync', detail: '4 attendees · skeleton built from last week’s minutes', prompt: 'Draft an agenda doc for the 9:30 logistics meeting', due: 'tomorrow', status: 'ready' },
+]
+
 /* ---------- Approval queue ---------- */
 
 export type Approval = {

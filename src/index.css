@@ -68,6 +68,17 @@ body {
   --seed-font-family: inherit;
 }
 
+/* 홈 히어로 전용 보라 워시 — 유일하게 허용된 그라데이션.
+   primary/tertiary color-mix ≤7%로 테마를 따라가며, 이보다 진하게 올리지 말 것. */
+.hero-tint {
+  position: absolute;
+  inset: -4rem -6rem 0;
+  pointer-events: none;
+  background:
+    radial-gradient(52rem 24rem at 24% 12%, color-mix(in srgb, var(--m3-primary) 7%, transparent), transparent 70%),
+    radial-gradient(46rem 22rem at 82% 0%, color-mix(in srgb, var(--m3-tertiary) 6%, transparent), transparent 70%);
+}
+
 /* ---------- Material 3 상태 표현 ---------- */
 
 /* 에이전트 상태 점 — 대기(정지) / 생각(펄스) / 준비(포커스 링) */

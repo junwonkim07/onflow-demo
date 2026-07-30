@@ -23,6 +23,14 @@ import {
   IconChartRegular,
   IconAddCircleRegular,
   IconBookmarkRegular,
+  IconListCheckRegular,
+  IconMicRegular,
+  IconCopyRegular,
+  IconRetryRegular,
+  IconThumbUpRegular,
+  IconThumbDownRegular,
+  IconThumbUpFill,
+  IconThumbDownFill,
 } from '@seed-design/icon'
 import {
   detect,
@@ -36,7 +44,7 @@ import {
   type ConflictAnswer,
   type ToolKey,
 } from '../intent'
-import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, asset, type ThreadMessage, type SourceKey, type MessageCard } from '../data'
+import { initialThread, teammates, memberSchedules, aqaraBriefing, briefing, queueTasks, asset, type ThreadMessage, type SourceKey, type MessageCard, type QueueTask } from '../data'
 import { SourceBadge, SparkIcon } from '../components/ui'
 import { spatialExpressive, effect } from '../motion'
 
@@ -121,7 +129,7 @@ type Session = {
 
 /* ---------- Inbox 뷰 시스템 ---------- */
 
-type ViewKey = 'inbox' | 'mentions' | 'created' | 'all' | 'unassigned' | 'dashboard' | 'cs' | 'am' | 'pq' | 'fr' | 'agent'
+type ViewKey = 'inbox' | 'mentions' | 'created' | 'all' | 'unassigned' | 'queue' | 'dashboard' | 'cs' | 'am' | 'pq' | 'fr' | 'agent'
 
 type InboxItem = {
   id: string
@@ -422,6 +430,14 @@ export default function Workspace({
     runSeed(item.prompt)
   }
 
+  /** 큐 태스크 실행 — 새 세션에서 프롬프트가 타이핑되고 실행 카드로 이어진다 */
+  const runQueueTask = (t: QueueTask) => {
+    if (t.status !== 'ready' || !t.prompt) return
+    setView('inbox')
+    newSession()
+    runSeed(t.prompt)
+  }
+
   useEffect(() => {
     if (forced) return
     const t = setTimeout(() => {
@@ -642,6 +658,7 @@ export default function Workspace({
           <NavRow Icon={IconWriteRegular} label="Created by you" count={sessions.filter(s => s.createdByYou).length} active={view === 'created'} onClick={() => openView('created')} />
           <NavRow Icon={IconListRegular} label="All" count={sessions.length} active={view === 'all'} onClick={() => openView('all')} />
           <NavRow Icon={IconMyProfileRegular} label="Unassigned" count={0} active={view === 'unassigned'} onClick={() => openView('unassigned')} />
+          <NavRow Icon={IconListCheckRegular} label="Work queue" count={queueTasks.filter(t => t.status === 'ready').length} active={view === 'queue'} onClick={() => openView('queue')} />
           <NavRow Icon={IconChartRegular} label="Dashboard" active={view === 'dashboard'} onClick={() => openView('dashboard')} />
           <div className="pt-3 pb-1 px-2 text-[11px] font-semibold text-[var(--m3-on-surface-variant)] flex items-center justify-between">
             Views <IconExpandMoreRegular width={12} height={12} />
@@ -771,7 +788,9 @@ export default function Workspace({
       )}
 
       {/* ── Col 3: Center ────────────────────────── */}
-      {view === 'dashboard' ? (
+      {view === 'queue' ? (
+        <QueuePanel onRun={runQueueTask} />
+      ) : view === 'dashboard' ? (
         <DashboardPanel sessions={sessions} />
       ) : view === 'agent' ? (
         <AgentPanel />
@@ -1064,8 +1083,16 @@ export default function Workspace({
               )}
             </div>
             <div className="flex items-center gap-0.5 px-2.5 pb-2.5">
-              {[IconAddCircleRegular, IconBookmarkRegular, IconWriteRegular, SparkIcon].map((I, i) => (
-                <button key={i} className="w-7 h-7 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]">
+              {(
+                [
+                  [IconAddCircleRegular, 'Attach'],
+                  [IconMicRegular, 'Voice input'],
+                  [IconBookmarkRegular, 'Saved replies'],
+                  [IconWriteRegular, 'Notes'],
+                  [SparkIcon, 'AI assist'],
+                ] as [React.ComponentType<{ width?: number; height?: number }>, string][]
+              ).map(([I, label]) => (
+                <button key={label} aria-label={label} title={label} className="w-7 h-7 rounded-lg grid place-items-center text-[var(--m3-on-surface-variant)] hover:bg-[var(--m3-surface-container)]">
                   <I width={15} height={15} />
                 </button>
               ))}
@@ -1284,6 +1311,69 @@ function ItemDetail({ item, onReply }: { item: InboxItem; onReply: () => void })
             <span className="text-[11px] text-[var(--m3-on-surface-variant)]">Nothing sends without you</span>
           </div>
         </div>
+      </div>
+    </section>
+  )
+}
+
+/* ---------- Work queue — Action-Ready Work Queue ---------- */
+
+const PRIORITY_CHIP = [
+  { label: 'P0', cls: 'bg-[var(--m3-error-container)] text-[var(--m3-on-error-container)]' },
+  { label: 'P1', cls: 'bg-[var(--m3-tertiary-container)] text-[var(--m3-on-tertiary-container)]' },
+  { label: 'P2', cls: 'bg-[var(--m3-surface-container-high)] text-[var(--m3-on-surface-variant)]' },
+]
+
+function QueuePanel({ onRun }: { onRun: (t: QueueTask) => void }) {
+  const ready = queueTasks.filter(t => t.status === 'ready').length
+  return (
+    <section className="flex-1 min-w-0 overflow-y-auto p-6">
+      <div className="max-w-3xl mx-auto">
+        <div className="flex items-baseline justify-between mb-1">
+          <h2 className="font-bold text-[17px]">Work queue</h2>
+          <span className="text-[11px] text-[var(--m3-on-surface-variant)]">{ready} ready to run · ordered by priority</span>
+        </div>
+        <p className="text-[12px] text-[var(--m3-on-surface-variant)] mb-4">
+          Core work, organized into agent-executable tasks. Run one — the draft opens for review before anything goes out.
+        </p>
+        <div className="space-y-2">
+          {queueTasks.map((t, i) => (
+            <motion.div
+              key={t.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spatialExpressive, delay: i * 0.04 }}
+              className="rounded-xl border border-[var(--m3-outline-variant)] bg-[var(--m3-surface-container-lowest)] px-4 py-3 flex items-center gap-3"
+            >
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md tabular-nums shrink-0 ${PRIORITY_CHIP[t.priority].cls}`}>
+                {PRIORITY_CHIP[t.priority].label}
+              </span>
+              <SourceBadge source={t.tool} size={30} />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline gap-2">
+                  <span className="font-semibold truncate">{t.title}</span>
+                  <span className="text-[11px] text-[var(--m3-on-surface-variant)] shrink-0">due {t.due}</span>
+                </span>
+                <span className="block text-[12px] text-[var(--m3-on-surface-variant)] truncate mt-0.5">{t.detail}</span>
+              </span>
+              {t.status === 'approval' ? (
+                <span className="flex items-center gap-1.5 text-[11px] text-[var(--m3-on-surface-variant)] shrink-0">
+                  <IconLockRegular width={12} height={12} /> In approval queue
+                </span>
+              ) : (
+                <button
+                  onClick={() => onRun(t)}
+                  className="h-7 px-3 rounded-lg bg-[var(--seed-color-bg-brand-solid)] text-[var(--seed-color-fg-brand-contrast)] text-[11px] font-bold flex items-center gap-1 shrink-0"
+                >
+                  Run <IconArrowRegular width={11} height={11} />
+                </button>
+              )}
+            </motion.div>
+          ))}
+        </div>
+        <p className="text-[11px] text-[var(--m3-on-surface-variant)] mt-4 text-center">
+          Every run opens as a previewed draft — nothing executes silently.
+        </p>
       </div>
     </section>
   )
@@ -1609,6 +1699,13 @@ function SourceChips({ sources }: { sources: { key: SourceKey; label: string }[]
 function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
   const mine = m.from === 'me'
   const tool = m.tool ? TOOLS[m.tool] : null
+  const [copied, setCopied] = useState(false)
+  const [vote, setVote] = useState<'up' | 'down' | null>(null)
+  const copyText = () => {
+    navigator.clipboard?.writeText(m.text).catch(() => {})
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -1662,7 +1759,35 @@ function Bubble({ m, onUndo }: { m: ThreadMessage; onUndo?: () => void }) {
           {m.card && <MessageCardView card={m.card} />}
           {!mine && m.sources && <SourceChips sources={m.sources} />}
         </div>
-        <div className={`text-[10px] text-[var(--m3-on-surface-variant)] mt-1 ${mine ? 'text-right' : ''}`}>{m.time}</div>
+        <div className={`flex items-center gap-0.5 mt-1 text-[10px] text-[var(--m3-on-surface-variant)] ${mine ? 'justify-end' : ''}`}>
+          <span>{m.time}</span>
+          {m.from === 'agent' && (
+            <span className="flex items-center ml-1 opacity-70 hover:opacity-100 transition-opacity">
+              <button onClick={copyText} aria-label="Copy" title="Copy" className="w-5.5 h-5.5 rounded-md grid place-items-center hover:bg-[var(--m3-surface-container)]">
+                {copied ? <IconCheckRegular width={12} height={12} /> : <IconCopyRegular width={12} height={12} />}
+              </button>
+              <button aria-label="Regenerate" title="Regenerate" className="w-5.5 h-5.5 rounded-md grid place-items-center hover:bg-[var(--m3-surface-container)]">
+                <IconRetryRegular width={12} height={12} />
+              </button>
+              <button
+                onClick={() => setVote(v => (v === 'up' ? null : 'up'))}
+                aria-label="Good response"
+                title="Good response"
+                className="w-5.5 h-5.5 rounded-md grid place-items-center hover:bg-[var(--m3-surface-container)]"
+              >
+                {vote === 'up' ? <IconThumbUpFill width={12} height={12} /> : <IconThumbUpRegular width={12} height={12} />}
+              </button>
+              <button
+                onClick={() => setVote(v => (v === 'down' ? null : 'down'))}
+                aria-label="Bad response"
+                title="Bad response"
+                className="w-5.5 h-5.5 rounded-md grid place-items-center hover:bg-[var(--m3-surface-container)]"
+              >
+                {vote === 'down' ? <IconThumbDownFill width={12} height={12} /> : <IconThumbDownRegular width={12} height={12} />}
+              </button>
+            </span>
+          )}
+        </div>
       </div>
     </motion.div>
   )

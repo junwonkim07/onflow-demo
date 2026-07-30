@@ -23,7 +23,7 @@
 2. **승인 큐 의미를 유지한다.** Approvals 페이지 = 사람이 승인해야 나가는 초안. "자동 발송" 같은 기능/카피 추가 금지 (실제 MOHO 안전 규칙에서 온 제약).
 3. **권한 카피를 유지한다.** "권한 밖 문서는 존재도 드러나지 않는다(no-existence-leak)" 관련 문구는 제품 차별화 포인트다. 삭제하지 말 것.
 4. **색은 하드코딩하지 않는다.** 모든 색은 `--m3-*` CSS 변수 (theme.ts가 생성) 또는 도구 브랜드색(`TOOLS[].color`, `SOURCE_COLOR`)만 사용. 라이트/다크 둘 다에서 확인 안 한 색 변경은 금지.
-5. **그라디언트·깜빡임 금지.** 오로라/오브/그라디언트/펄스 점은 전부 제거된 상태다(예외 없음). 그림자도 카드에는 쓰지 않는다 — 구분은 헤어라인 보더로만.
+5. **그라디언트·깜빡임 금지.** 오로라/오브/그라디언트/펄스 점은 전부 제거된 상태다. **유일한 예외: 홈 히어로의 `.hero-tint`** (index.css) — primary/tertiary `color-mix` ≤7% 라디얼 워시 하나뿐이며, 이보다 진하게 올리거나 다른 화면에 복제하지 말 것. 그림자도 카드에는 쓰지 않는다 — 구분은 헤어라인 보더로만.
 6. **당근 오렌지(#FF6F0F 계열)와 구글 4색 조합 금지.** SEED 브랜드 토큰은 theme.ts에서 M3 primary(인디고)로 오버라이드되어 있다 — 그 오버라이드를 지우면 버튼이 당근색으로 돌아가니 건드리지 말 것.
 7. **UI 문자열은 영어로.** 한국어 문자열을 UI에 추가하지 않는다 (주석은 자유).
 8. **`seed-design/` 폴더는 수정하지 않는다.** SEED CLI가 관리하는 스니펫이다. 커스터마이징이 필요하면 우리 컴포넌트(`src/components/`)에서 감싼다.
@@ -84,7 +84,7 @@ Workspace 컴포저 위에 뜨는 카드는 세 종류이고, **우선순위가 
 | `src/index.css` | agent-dot, progress-line, slot-band, reduced-motion | 상태 표현 |
 | `src/App.tsx` | 셸(레일/톱바), 페이지 라우팅, ⌘K 팔레트, 토스트, 승인 상태 | 내비 항목, 팔레트 항목 |
 | `src/pages/Home.tsx` | 히어로 + 스탯 + 브리핑(클릭 시 워크스페이스 시드) | 브리핑은 data.ts에서 |
-| `src/pages/Workspace.tsx` | **인터콤 4컬럼 인박스 포맷 + 뷰 시스템**(`view` 상태): Your inbox/All/Created(세션 모드, Copilot 패널 포함) · Mentions/Views 4종(아이템 리스트+상세, "Draft reply in a session"=새 세션에 프롬프트 시드) · Dashboard/Agent 전용 패널 · Unassigned 엠티. 풀블리드(App main 패딩이 workspace에서만 0) | 시나리오(SCENARIOS), MENTIONS/VIEW_ITEMS, 카드 |
+| `src/pages/Workspace.tsx` | **인터콤 4컬럼 인박스 포맷 + 뷰 시스템**(`view` 상태): Your inbox/All/Created(세션 모드, Copilot 패널 포함) · Mentions/Views 4종(아이템 리스트+상세, "Draft reply in a session"=새 세션에 프롬프트 시드) · **Work queue**(우선순위별 에이전트 실행 태스크, Run=새 세션 시드 — 데이터는 data.ts `queueTasks`, prompt는 반드시 카드를 유발하는 문장) · Dashboard/Agent 전용 패널 · Unassigned 엠티. 에이전트 버블 밑에 Copy/Regenerate/👍👎 액션 줄(Bubble 컴포넌트). 풀블리드(App main 패딩이 workspace에서만 0) | 시나리오(SCENARIOS), MENTIONS/VIEW_ITEMS, 카드 |
 | `src/pages/Approvals.tsx` | 메일/슬랙 **실물 모양** 초안 + 승인/반려 | 초안은 data.ts에서 |
 | `src/pages/Knowledge.tsx` | Company Memory 그래프 — **d3-force/zoom/drag 실구현**(휠 줌, 배경 팬, 노드 드래그, Reset view) + 인스펙터 + 문서 목록 | 엔티티(ENTITIES)/연결(EDGES) |
 | `src/pages/Integrations.tsx` | 연동 그리드 | 목록은 data.ts에서 |
