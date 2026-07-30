@@ -307,7 +307,7 @@ const initialSessions: Session[] = [
         text: 'Jihoon’s role doesn’t include vendor pricing. Sent an access request to Junwon — nothing is shared until it’s approved.',
         time: '10:16 AM',
       },
-      { id: 5, from: 'me', text: 'Approved — share it in this session.', time: '10:18 AM' },
+      { id: 5, from: 'me', text: '@Onflow approved — share it in this session.', time: '10:18 AM' },
       {
         id: 6,
         from: 'agent',
@@ -325,7 +325,7 @@ const initialSessions: Session[] = [
       {
         id: 1,
         from: 'me',
-        text: '@Onflow site photo from yesterday’s pilot install — lock placement look right to you?',
+        text: 'Site photo from yesterday’s pilot install — lock placement look right to you?',
         time: 'yesterday',
         image: 'img/smarthome.jpg',
       },

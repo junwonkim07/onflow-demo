@@ -49,7 +49,7 @@ export const initialThread: ThreadMessage[] = [
   {
     id: 1,
     from: 'me',
-    text: '@Onflow inbound from this morning — racks are near capacity again. Can you log it?',
+    text: 'Inbound from this morning — racks are near capacity again. Can you log it?',
     time: '11:02 AM',
     image: 'img/warehouse.jpg',
   },
@@ -70,7 +70,7 @@ export const initialThread: ThreadMessage[] = [
       { key: 'notion', label: 'Ops journal' },
     ],
   },
-  { id: 3, from: 'me', text: '@Onflow did tomorrow’s design review get moved to 3 PM?', time: '4:52 PM' },
+  { id: 3, from: 'me', text: 'Did tomorrow’s design review get moved to 3 PM?', time: '4:52 PM' },
   {
     id: 4,
     from: 'agent',
